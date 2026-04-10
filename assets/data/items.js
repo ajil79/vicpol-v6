@@ -1,5 +1,77 @@
 /* Shared static catalog data extracted from the main app bundles. */
 
-'+item_block+'
-
-'+def_block+'
+window.ITEM_CATALOG = [
+        // Firearms
+        { name: "Pistol", cat: "firearms" }, { name: "SNS Pistol", cat: "firearms" }, { name: "Revolver", cat: "firearms" },
+        { name: "Machine Pistol", cat: "firearms" }, { name: "Combat Pistol", cat: "firearms" }, { name: "Heavy Pistol", cat: "firearms" },
+        { name: "Shotgun", cat: "firearms" }, { name: "Sawn-off Shotgun", cat: "firearms" },
+        { name: "Micro SMG", cat: "firearms" }, { name: "SMG", cat: "firearms" }, { name: "SMG Mk2", cat: "firearms" },
+        { name: "Honey Badger SMG", cat: "firearms" }, { name: "P90 SMG", cat: "firearms" },
+        { name: "Carbine Rifle", cat: "firearms" }, { name: "Assault Rifle", cat: "firearms" },
+        { name: "Assault Rifle X", cat: "firearms" }, { name: "ASK74U Rifle", cat: "firearms" }, { name: "AK-47", cat: "firearms" },
+        { name: "Firework Launcher", cat: "firearms" }, { name: "Taser", cat: "firearms" },
+        // Melee & Explosives
+        { name: "Knife", cat: "melee" }, { name: "Hammer", cat: "melee" }, { name: "Crowbar", cat: "melee" },
+        { name: "Wrench", cat: "melee" }, { name: "Machete", cat: "melee" }, { name: "Katana", cat: "melee" },
+        { name: "Switchblade", cat: "melee" }, { name: "Dagger", cat: "melee" }, { name: "Baseball Bat", cat: "melee" },
+        { name: "Knuckle Dusters", cat: "melee" }, { name: "Baton", cat: "melee" },
+        { name: "C4", cat: "melee" }, { name: "Pipe Bomb", cat: "melee" }, { name: "Grenade", cat: "melee" },
+        { name: "Sticky Bomb", cat: "melee" }, { name: "Molotov", cat: "melee" },
+        // Ammo & Attachments
+        { name: "Pistol Ammo", cat: "ammo" }, { name: ".50AE Pistol Ammo", cat: "ammo" },
+        { name: "SMG Ammo", cat: "ammo" },
+        { name: "7.62 Rifle Ammo", cat: "ammo" }, { name: "5.56 Rifle Ammo", cat: "ammo" },
+        { name: "Shotgun Ammo", cat: "ammo" },
+        { name: "Rifle Suppressor", cat: "ammo" }, { name: "SMG Suppressor", cat: "ammo" }, { name: "Pistol Suppressor", cat: "ammo" },
+        { name: "SMG Drum", cat: "ammo" }, { name: "SMG Clip", cat: "ammo" },
+        { name: "Extended Rifle Clip", cat: "ammo" }, { name: "Rifle Drum", cat: "ammo" },
+        { name: "Medium Scope", cat: "ammo" }, { name: "Carbonfibre Stock", cat: "ammo" },
+        { name: "7.62 Ammo Box", cat: "ammo" }, { name: "SMG Ammo Box", cat: "ammo" }, { name: "5.56 Ammo Box", cat: "ammo" },
+        // Drugs
+        { name: "Meth Bags", cat: "drugs" }, { name: "Meth Brick", cat: "drugs" },
+        { name: "Cocaine Bags", cat: "drugs" }, { name: "Cocaine Brick", cat: "drugs" }, { name: "Crack Cocaine", cat: "drugs" },
+        { name: "Weed Bags", cat: "drugs" }, { name: "Weed Brick", cat: "drugs" },
+        { name: "Heroin Bags", cat: "drugs" }, { name: "Fentanyl", cat: "drugs" },
+        { name: "Xanax", cat: "drugs" }, { name: "Oxy", cat: "drugs" },
+        { name: "MDMA", cat: "drugs" }, { name: "Ecstasy Pills", cat: "drugs" },
+        { name: "LSD", cat: "drugs" }, { name: "Ketamine", cat: "drugs" }, { name: "GHB", cat: "drugs" },
+        { name: "Mushrooms", cat: "drugs" }, { name: "Opium Bags", cat: "drugs" }, { name: "Opium Seeds", cat: "drugs" },
+        { name: "Drug Scales", cat: "drugs" }, { name: "Snap-lock Bags (packaging)", cat: "drugs" },
+        { name: "Vacuum Sealer", cat: "drugs" }, { name: "Drug Lab Equipment", cat: "drugs" },
+        { name: "Drug Pipe", cat: "drugs" }, { name: "Syringes", cat: "drugs" },
+        { name: "Cash (mixed denominations)", cat: "drugs" },
+        // Gear & Other
+        { name: "Heavy Bulletproof Vest", cat: "gear" }, { name: "Light Bulletproof Vest", cat: "gear" },
+        { name: "Handcuffs", cat: "gear" }, { name: "NOS Bottles", cat: "gear" },
+        { name: "Boosting Tablet", cat: "gear" }, { name: "Car Hacking Device", cat: "gear" },
+        { name: "GPS Hacking Device", cat: "gear" }, { name: "Credit Card", cat: "gear" },
+        { name: "Lockpick", cat: "gear" },
+        { name: "Stab Vest", cat: "gear" }, { name: "Skateboard", cat: "gear" },
+        { name: "Radio", cat: "gear" }, { name: "Binoculars", cat: "gear" }
+      ];
+window.VEHICLE_DEFECTS = [
+    {cat:"Suspension & Steering", name:"Excessive Suspension Lift or Lowering", desc:"Lifting or lowering >75mm above/below manufacturer specs without engineering certification", law:"VSB 14, Road Safety (Vehicles) Regulations 2021, Reg 70", reason:"Affects vehicle handling, stability, and safety"},
+    {cat:"Suspension & Steering", name:"Non-Compliant Suspension Components", desc:"Suspension components that do not meet safety standards", law:"ADR 35/06 (Stability and Handling), VSB 14", reason:"Unsafe handling and compromised stability"},
+    {cat:"Suspension & Steering", name:"Modified/Tampered Steering Systems", desc:"Altering steering system without certification", law:"ADR 10/02 (Steering Systems), VSB 14", reason:"Dangerous handling and poor response"},
+    {cat:"Suspension & Steering", name:"Unapproved Wheel Spacers / Widened Track", desc:"Using wheel spacers to increase track width beyond manufacturer specs", law:"VSB 14", reason:"Compromises steering geometry and safety"},
+    {cat:"Tyres & Wheels", name:"Oversized Tyres", desc:"Tyres exceeding 50mm over original manufacturer size", law:"ADR 23/02, VSB 14", reason:"Affects braking, handling, and speedometer accuracy"},
+    {cat:"Tyres & Wheels", name:"Damaged or Bald Tyres", desc:"Tread depth below legal minimum of 1.6mm", law:"Road Safety (Vehicles) Regulations 2021, Reg 153", reason:"Reduces grip, increases accident risk"},
+    {cat:"Tyres & Wheels", name:"Non-Compliant Wheels", desc:"Aftermarket wheels not meeting load/speed ratings", law:"ADR 23/02, VSB 14", reason:"Risk of tyre failure or poor handling"},
+    {cat:"Exhaust & Emissions", name:"Excessive Exhaust Noise", desc:"Aftermarket exhaust exceeding 90dB(A)", law:"ADR 83/00 (Noise Emissions), VSB 14", reason:"Disturbs public peace, indicates tampered emission controls"},
+    {cat:"Exhaust & Emissions", name:"Removal of Emission Control Devices", desc:"Removing/modifying catalytic converters, EGR valves, or DPF", law:"ADR 79/04 (Emissions), Road Safety (Vehicles) Regulations 2021", reason:"Increases harmful emissions"},
+    {cat:"Exhaust & Emissions", name:"Straight Pipes / No Muffler", desc:"Removing mufflers or installing uncertified exhaust systems", law:"ADR 83/00, VSB 14", reason:"Excessive noise and pollution"},
+    {cat:"Lighting", name:"Non-Compliant Headlights/Indicators/Brake Lights", desc:"Lights too bright, wrong colour, or improperly positioned", law:"ADR 13/00 (Lighting Standards), VSB 14", reason:"Impairs visibility for other drivers"},
+    {cat:"Lighting", name:"Aftermarket LED or HID Lights", desc:"Non-compliant LED/HID lights not meeting ADR specs", law:"ADR 13/00, VSB 14", reason:"Can dazzle or blind oncoming traffic"},
+    {cat:"Lighting", name:"Neon or Underglow Lighting", desc:"Neon/underglow lighting installed on vehicle", law:"ADR 13/00", reason:"Distracts other drivers, illegal on public roads"},
+    {cat:"Lighting", name:"Non-Compliant Auxiliary Lighting (Light Bars)", desc:"Additional LED bars without proper mounting/compliance", law:"ADR 13/00, VSB 14", reason:"Creates glare or distraction"},
+    {cat:"Body & Frame", name:"Altered Vehicle Body Structure", desc:"Modifying body without engineering approval (e.g. cutting chassis, altering roof)", law:"VSB 14", reason:"Compromises crash safety and structural integrity"},
+    {cat:"Body & Frame", name:"Non-Compliant Bullbars", desc:"Bullbars interfering with airbags or exceeding legal limits", law:"ADR 42/04 (Construction and Equipment)", reason:"Increased injury risk in collisions, may prevent airbag deployment"},
+    {cat:"Body & Frame", name:"Non-Compliant Spoilers/Wings/Body Kits", desc:"Aftermarket aero parts not meeting vehicle design standards", law:"ADR 42/04, VSB 14", reason:"Affects vehicle stability, increases accident risk"},
+    {cat:"Interior & Safety", name:"Removal or Alteration of Airbags", desc:"Disabling or removing airbags", law:"ADR 69/00 (Frontal Impact Protection)", reason:"Compromises occupant safety in collision"},
+    {cat:"Interior & Safety", name:"Tampered Seatbelts or Harnesses", desc:"Non-ADR seatbelts/harnesses or improper installation", law:"ADR 4/05 (Seatbelts)", reason:"Increases injury risk in accident"},
+    {cat:"Interior & Safety", name:"Non-Compliant Aftermarket Seats", desc:"Aftermarket seats without proper approval", law:"ADR 3/03 (Seating)", reason:"Insufficient support in crashes"},
+    {cat:"Interior & Safety", name:"Non-Compliant Roll Cage", desc:"Roll cage interfering with airbags or safety systems", law:"ADR 4/05, VSB 14", reason:"Additional injury risks in crashes"},
+    {cat:"Windows & Glazing", name:"Excessive Window Tinting", desc:"Front side windows <35% VLT or rear <20% VLT", law:"Road Safety (Vehicles) Regulations 2021, Reg 114", reason:"Reduces driver visibility, obstructs law enforcement view"},
+    {cat:"Windows & Glazing", name:"Cracked or Damaged Windscreen", desc:"Windscreen damage impairing driver visibility", law:"ADR 8/01 (Glazing)", reason:"Affects ability to see clearly, increases accident risk"},
+    {cat:"Performance", name:"Illegally Installed Nitrous Oxide (NOS)", desc:"NOS system installed/used on public roads", law:"Road Safety (Vehicles) Regulations 2021, Reg 68", reason:"Dangerous power boost, only allowed for track use"}
+  ];

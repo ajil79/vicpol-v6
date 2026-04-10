@@ -3,9 +3,9 @@
 
   const APP_META = {
     name: "VicPol Tool",
-    version: "v5",
-    fullName: "VicPol Tool v5",
-    pageTitle: "VicPol Tool v5",
+    version: "v6",
+    fullName: "VicPol Tool v6",
+    pageTitle: "VicPol Tool v6",
     reportSubtitle: "Arrest Reports, Warrants, Traffic, Field Contacts, Search & Seizure, Traffic History & Vehicle Inspection",
     utilitySubtitle: "Traffic history lookup remains available while you work.",
     ocrSubtitle: "OCR — licence, LEAP, MELROADS, fingerprint and weapons scanning."
@@ -14,19 +14,17 @@
   const STORAGE_SCHEMA_VERSION = 1;
   const AUTOSAVE_KEY = "vicpol_report_autosave";
   const DRAFTS_KEY = "vicpol_report_drafts";
-  const OCR_ASSET_BASE = "https://cdn.jsdelivr.net/npm/tesseract.js@4/dist";
-  const OCR_LANG_BASE = "https://tessdata.projectnaptha.com/4.0.0";
+  const OCR_ASSET_BASE = "assets/vendor/tesseract";
+  const OCR_LANG_BASE = "assets/vendor/tessdata";
 
   // ============================================================================
   // Offline-first note:
-  // Charges and PINs are embedded in this file and fully searchable offline.
-  // OCR is optional and will attempt to load Tesseract from a CDN only when needed.
+  // Charges and PINs are local and fully searchable offline.
+  // OCR is configured to load local vendor assets from this deployed site.
   // ============================================================================
 
   async function ensureTesseract() {
     if (window.Tesseract && typeof window.Tesseract.recognize === "function") return true;
-    if (typeof navigator !== "undefined" && navigator.onLine === false) return false;
-
     if (ensureTesseract._loading) return ensureTesseract._loading;
     ensureTesseract._loading = new Promise((resolve) => {
       const existing = document.getElementById("tesseract-script-loader");
@@ -42,6 +40,7 @@
       const timeout = setTimeout(() => {
         ensureTesseract._loading = null;
         resolve(false);
+        if (typeof toast === "function") toast("OCR assets are missing from this deployment", "warn");
       }, 10000);
       s.onload = () => {
         clearTimeout(timeout);
@@ -52,6 +51,7 @@
         clearTimeout(timeout);
         ensureTesseract._loading = null;
         resolve(false);
+        if (typeof toast === "function") toast("OCR assets are missing from this deployment", "warn");
         if (typeof updateOcrAvailability === 'function') updateOcrAvailability();
       };
       if (!existing) document.head.appendChild(s);

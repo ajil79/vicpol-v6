@@ -1,68 +1,213 @@
 /* OCR parsing and merge helpers. */
 
-  function parseOCR(text) {
-    const raw = String(text || "").replace(/\r/g, "");
-    const cleanedRaw = raw
-      .split("\n")
-      .map(l => l.replace(/\s+/g, " ").trim())
-      .filter(Boolean)
-      .filter(l => !/^(PENDING\s+PAPERWORK|NATIONAL\s+CRIME\s+CHECK|CRIMTRAC)$/i.test(l));
-    const upperLines = cleanedRaw.map(l => l.toUpperCase());
-    const upper = upperLines.join("\n");
 
-    const officerNames = [];
-    const itemLines = [];
-    for (const l of cleanedRaw) {
-      const u = l.toUpperCase();
-      if (looksLikeOfficerLine(u)) {
-        const nameOnly = extractOfficerName(l);
-        if (nameOnly) officerNames.push(nameOnly);
-        continue;
+  const OCR_ITEM_ALIASES = {
+    "TACTICAL SMG": "Tactical SMG",
+    "TACTICAL RIFLE": "Tactical Rifle",
+    "SPECIAL CARBINE MK2": "Special Carbine MK2",
+    "ASSAULT RIFLE MK2": "Assault Rifle MK2",
+    "MARKSMAN PISTOL": "Marksman Pistol",
+    "SNS PISTOL": "SNS Pistol",
+    "HEAVY BULLET PROOF VEST": "Heavy Bulletproof Vest",
+    "HEAVY BULLETPROOF VEST": "Heavy Bulletproof Vest",
+    "LIGHT BULLET PROOF VEST": "Light Bulletproof Vest",
+    "LIGHT BULLETPROOF VEST": "Light Bulletproof Vest",
+    "MOBILE PHONE": "Mobile Phone",
+    "DIRTY MONEY": "Dirty Money",
+    "BANK CARD": "Principal Bank Card",
+    "PRINCIPAL BANK CARD": "Principal Bank Card",
+    "CONTRACT TABLET": "Contract Tablet",
+    "SPOOFING CARD": "Spoofing Card",
+    "PINK/BLACK BANDANA": "Pink/Black Bandana",
+    "ZAILRIDD BANDANA": "Zailridd Bandana",
+    "PINK MOBILE PHONE": "Pink Mobile Phone",
+    "BULLET PROOF VEST": "Bulletproof Vest"
+  };
+
+  function cleanOcrLine(line) {
+    return String(line || '')
+      .replace(/[_|]+/g, ' ')
+      .replace(/[“”]/g, '"')
+      .replace(/[‘’]/g, "'")
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function normaliseInventoryCandidate(line) {
+    return cleanOcrLine(line)
+      .replace(/\b\d+(?:\.\d+)?\s*kg\b/gi, ' ')
+      .replace(/\b\d+(?:,\d{3})*x\b/gi, ' ')
+      .replace(/\b\d+x\b/gi, ' ')
+      .replace(/\b(?:Durability|Ammo|Weapon Age|Repair Count|Components|Serial number|Ammo type)\b.*$/i, ' ')
+      .replace(/^[^A-Z0-9]+/i, '')
+      .replace(/[^A-Z0-9 .\/\-]/gi, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function titleCaseLoose(value) {
+    return String(value || '')
+      .toLowerCase()
+      .replace(/(^|[\s'\-\/])([a-z])/g, (_, sep, ch) => sep + ch.toUpperCase())
+      .replace(/\bSmg\b/g, 'SMG')
+      .replace(/\bMk2\b/g, 'MK2')
+      .replace(/\bNos\b/g, 'NOS');
+  }
+
+  function bestCatalogItemMatch(line) {
+    const src = normaliseInventoryCandidate(line).toUpperCase();
+    if (!src || src.length < 3) return '';
+    const catalogue = Array.isArray(window.ITEM_CATALOG) ? window.ITEM_CATALOG : [];
+    const candidates = [];
+    catalogue.forEach(item => candidates.push(item.name));
+    Object.keys(OCR_ITEM_ALIASES).forEach(alias => candidates.push(alias));
+
+    const compact = (s) => String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const diceScore = (a, b) => {
+      const aa = compact(a), bb = compact(b);
+      if (!aa || !bb) return 0;
+      if (aa === bb) return 1;
+      if (aa.length < 2 || bb.length < 2) return aa === bb ? 1 : 0;
+      const counts = new Map();
+      for (let i = 0; i < aa.length - 1; i++) {
+        const bg = aa.slice(i, i + 2);
+        counts.set(bg, (counts.get(bg) || 0) + 1);
       }
-      if (looksLikeItemLine(u) && !/^(PENDING\s+PAPERWORK)$/i.test(u)) {
-        itemLines.push(l.trim());
+      let overlap = 0;
+      for (let i = 0; i < bb.length - 1; i++) {
+        const bg = bb.slice(i, i + 2);
+        const count = counts.get(bg) || 0;
+        if (count > 0) {
+          overlap += 1;
+          counts.set(bg, count - 1);
+        }
+      }
+      return (2 * overlap) / ((aa.length - 1) + (bb.length - 1));
+    };
+
+    let bestName = '';
+    let bestScore = 0;
+    const srcWords = src.split(/\s+/).filter(Boolean);
+
+    for (const rawName of candidates) {
+      const displayName = OCR_ITEM_ALIASES[rawName.toUpperCase()] || rawName;
+      const tgt = String(rawName || '').toUpperCase();
+      if (!tgt) continue;
+      let score = 0;
+      if (src === tgt) score = 10;
+      else if (src.includes(tgt) || tgt.includes(src)) score = 8;
+      else {
+        const tgtWords = tgt.split(/\s+/).filter(Boolean);
+        const overlap = tgtWords.filter(word => srcWords.includes(word)).length;
+        score = overlap * 2;
+        if (overlap >= 2) score += 2;
+        score += diceScore(src, tgt) * 5.5;
+      }
+      if (/AMMO/i.test(tgt) && /AMMO/i.test(src)) score += 1;
+      if (/VEST/i.test(tgt) && /VEST/i.test(src)) score += 1;
+      if (/PHONE/i.test(tgt) && /PHONE/i.test(src)) score += 1;
+      if (score > bestScore) {
+        bestScore = score;
+        bestName = displayName;
       }
     }
 
+    return bestScore >= 4 ? bestName : '';
+  }
+
+  function extractInventoryItemLines(lines) {
+    const out = [];
+    const seen = new Set();
+    const push = (value) => {
+      const clean = cleanOcrLine(value);
+      const key = clean.toUpperCase();
+      if (!clean || seen.has(key)) return;
+      seen.add(key);
+      out.push(clean);
+    };
+
+    for (const rawLine of (lines || [])) {
+      const line = cleanOcrLine(rawLine);
+      if (!line) continue;
+      if (/(NAME|DOB|SEX|HOME\s*ADDR|HOMEADDR|PHONE\s*NO|PHONENO|LIC\s*CLASS|UC\s*CLASS|LIC\s*STATUS|UC\s*STATUS|UCSTATUS|EXPIRES|CONDITIONS|DEMERIT\s*PTS|WANTED|BAIL|GANG\s*AFF|VIOLENCE\s*POLICE|VIOLENCE|POS\s*WEAP|WEAPON\s*LONGARM|HANDGUN|CONCEAL\s*CARRY|F\/ARM\s*PROHIB\s*ORDER|ROAD\s*TRAFFIC\s*AUTHORITY|LEAP\s*DATABASE\s*ENTRY)/i.test(line)) continue;
+      const direct = bestCatalogItemMatch(line);
+      if (direct) {
+        push(direct);
+        continue;
+      }
+      const parts = line.split(/\s{2,}|\|/g).map(normaliseInventoryCandidate).filter(Boolean);
+      for (const part of parts) {
+        const hit = bestCatalogItemMatch(part);
+        if (hit) push(hit);
+      }
+    }
+    return out;
+  }
+
+  function parseWeaponCardText(rawText) {
+    const text = String(rawText || '').replace(/\r/g, '');
+    if (!/Durability\s*[:.]|Ammo\s*[:.]|Serial\s*number\s*[:.]/i.test(text)) return null;
+    const lines = text.split(/\n+/).map(cleanOcrLine).filter(Boolean);
+    const nonMeta = lines.filter(line => !/^[^A-Za-z]*(Durability|Ammo|Ammo type|Serial number|Components|Weapon Age|Repair Count)\s*[:.]/i.test(line));
+    const rawName = nonMeta.find(line => /[A-Za-z]/.test(line)) || '';
+    const itemName = bestCatalogItemMatch(rawName) || titleCaseLoose(rawName);
+    const serial = (text.match(/Serial\s*number\s*[:.]\s*([A-Z0-9]{6,})/i) || [])[1] || '';
+    const ammo = (text.match(/Ammo\s*[:.]\s*(\d{1,5})/i) || [])[1] || '';
+    const ammoTypeRaw = (text.match(/Ammo\s*type\s*[:.]\s*([^\n]+)/i) || [])[1] || '';
+    const ammoType = bestCatalogItemMatch(ammoTypeRaw) || cleanOcrLine(ammoTypeRaw).trim();
+    const componentsRaw = (text.match(/Components\s*[:.]\s*([^\n]+)/i) || [])[1] || '';
+    const components = cleanOcrLine(componentsRaw).split(/,\s*/).map(bestCatalogItemMatch).filter(Boolean);
+    const itemLines = [];
+    if (itemName) itemLines.push(serial ? `${itemName} SN: ${serial}` : itemName);
+    if (ammoType) itemLines.push(ammo ? `${ammoType} x${ammo}` : ammoType);
+    components.forEach(c => itemLines.push(c));
+    return { name: itemName, serial, ammo, ammoType, components, itemLines };
+  }
+
+  function parseDrugResultText(rawText) {
+    const text = String(rawText || '');
+    const m = text.match(/Result\s+indicated\s*[:.]\s*(POSITIVE|NEGATIVE)/i);
+    return m ? m[1].toUpperCase() : '';
+  }
+
+  function parseOCR(text) {
+    const raw = String(text || '').replace(/\r/g, '');
+    const cleanedRaw = raw.split('\n').map(cleanOcrLine).filter(Boolean)
+      .filter(l => !/^(PENDING\s+PAPERWORK|NATIONAL\s+CRIME\s+CHECK|CRIMTRAC)$/i.test(l));
+    const upperLines = cleanedRaw.map(l => l.toUpperCase());
+    const upper = upperLines.join('\n');
+
     const normaliseBool = (v) => {
-      const s = String(v || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
-      if (!s) return "";
-      if (/^Y(E|3)?S?$/.test(s)) return "YES";
-      if (/^N(O|0)?$/.test(s)) return "NO";
-      return "";
+      const s = String(v || '').toUpperCase().replace(/[^A-Z0-9\- ]/g, '').trim();
+      if (!s) return '';
+      if (/YES/.test(s)) return /SHORT TERM/.test(s) ? 'YES - SHORT TERM' : 'YES';
+      if (/NO|N0/.test(s)) return 'NO';
+      return '';
     };
-
-    const normaliseDate = (v) => String(v || "").replace(/\s+/g, "").trim();
-
-    const smartTitle = (v) => {
-      return String(v || "")
-        .toLowerCase()
-        .replace(/(^|[\s'\-])([a-z])/g, (_, sep, ch) => sep + ch.toUpperCase())
-        .replace(/\bMrc\b/g, 'MRC');
+    const normaliseDate = (v) => {
+      const m = String(v || '').replace(/\s+/g, ' ').match(/\b\d{1,4}[\-\/]\d{1,2}[\-\/]\d{1,4}(?:\s+[0-9:]+\s*(?:AM|PM|HRS)?)?/i);
+      return m ? m[0].trim() : String(v || '').replace(/\s+/g, ' ').trim();
     };
-
+    const smartTitle = (v) => String(v || '').toLowerCase().replace(/(^|[\s'\-])([a-z])/g, (_, sep, ch) => sep + ch.toUpperCase()).replace(/\bMrc\b/g, 'MRC').replace(/\bSmg\b/g, 'SMG');
     const flipName = (name) => {
-      const s = String(name || "").trim().replace(/\s+/g, " ");
-      if (!s) return "";
-      if (s.includes(",")) {
-        const [last, first] = s.split(",", 2);
-        const combined = `${String(first || "").trim()} ${String(last || "").trim()}`.trim();
-        return smartTitle(combined);
+      const s = String(name || '').trim().replace(/\s+/g, ' ');
+      if (!s) return '';
+      if (s.includes(',')) {
+        const [last, first] = s.split(',', 2);
+        return smartTitle(`${String(first || '').trim()} ${String(last || '').trim()}`.trim());
       }
       return smartTitle(s);
     };
-
     const findLabelValue = (labels, opts = {}) => {
       const variants = Array.isArray(labels) ? labels : [labels];
       const sameLine = opts.sameLine !== false;
       const nextLine = opts.nextLine !== false;
       const valuePattern = opts.valuePattern || /(.+)/;
-      const clean = opts.clean || (v => String(v || "").trim());
-
+      const clean = opts.clean || (v => String(v || '').trim());
       for (let i = 0; i < upperLines.length; i++) {
         const lineU = upperLines[i];
         for (const label of variants) {
-          const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/\s+/g, "\\s+");
+          const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+');
           if (sameLine) {
             const re = new RegExp(`(?:^|\\b)${escaped}[\\s:;.,-]*${valuePattern.source}`, 'i');
             const m = lineU.match(re);
@@ -72,152 +217,125 @@
             }
           }
           if (nextLine && new RegExp(`(?:^|\\b)${escaped}(?:$|[\\s:;.,-]*$)`, 'i').test(lineU)) {
-            const next = clean(cleanedRaw[i + 1] || "");
+            const next = clean(cleanedRaw[i + 1] || '');
             if (next) return next;
           }
         }
       }
-      return "";
+      return '';
     };
-
-    const findAfterHeader = (headerMatchers, offset = 1, maxScan = 8) => {
-      for (let i = 0; i < upperLines.length; i++) {
-        if (headerMatchers.every(re => re.test(upperLines[i]) || re.test(upperLines[i + 1] || ""))) {
-          const skipRe = /^(DRIVER|VICTORIA|AUSTRALIA|SEARCH PERSON|RUN PERSON CHECK|PENDING|LICEN[CS]E\s*(NO|EXPIRY|TYPE)|DATE\s+OF\s+BIRTH|NATIONAL\s+CRIME\s+CHECK|VIC\s*ROADS|CRIMTRAC)$/i;
-          let seen = 0;
-          for (let j = i + 1; j < Math.min(i + maxScan, cleanedRaw.length); j++) {
-            const line = cleanedRaw[j];
-            if (!line || skipRe.test(line)) continue;
-            seen++;
-            if (seen === offset) return line;
-          }
+    const findInlineField = (label, stopLabels = []) => {
+      for (let i = 0; i < cleanedRaw.length; i++) {
+        const line = cleanedRaw[i];
+        const upperLine = upperLines[i];
+        const idx = upperLine.indexOf(label.toUpperCase());
+        if (idx === -1) continue;
+        let tail = line.slice(idx + label.length).replace(/^[\s:;.,-]+/, '').trim();
+        for (const stop of stopLabels) {
+          const stopPattern = String(stop || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+');
+          const re = new RegExp(`\\s+${stopPattern}\\b`, 'i');
+          const m = tail.match(re);
+          if (m) tail = tail.slice(0, m.index).trim();
         }
+        if (tail) return tail;
       }
-      return "";
+      return '';
     };
 
-    let leapName = findLabelValue(['NAME'], {
-      valuePattern: /([A-Z][A-Z ,'.\-]{2,})/,
-      clean: v => String(v || '').replace(/[^A-Z ,'.\-]/gi, '').trim()
-    });
-    let leapDob = normaliseDate(findLabelValue(['DOB', 'D O B'], {
-      valuePattern: /([0-9]{1,4}[\-\/][0-9]{1,2}[\-\/][0-9]{1,4})/
-    }));
+    const officerNames = [];
+    for (const l of cleanedRaw) {
+      const u = l.toUpperCase();
+      if (looksLikeOfficerLine(u)) {
+        const nameOnly = extractOfficerName(l);
+        if (nameOnly) officerNames.push(nameOnly);
+      }
+    }
+
+    const inventoryHits = extractInventoryItemLines(cleanedRaw);
+    const weaponCard = parseWeaponCardText(raw);
+    const drugResult = parseDrugResultText(raw);
+
+    let leapName = findLabelValue(['NAME'], { valuePattern: /([A-Z][A-Z ,'.\-]{2,})/, clean: v => String(v || '').replace(/[^A-Z ,'.\-]/gi, '').trim() });
+    let leapDob = normaliseDate(findLabelValue(['DOB', 'D O B'], { valuePattern: /([0-9]{1,4}[\-\/][0-9]{1,2}[\-\/][0-9]{1,4})/ }));
     let leapSex = findLabelValue(['SEX', 'S E X'], { valuePattern: /([MFX])/i }).toUpperCase();
-    let leapAddress = findLabelValue(['HOME ADDR', 'HOME ADDRESS', 'ADDRESS'], {
-      valuePattern: /([A-Z0-9 ,'.\-]{3,})/,
-      clean: v => String(v || '').trim()
-    });
-    let leapPhone = findLabelValue(['PHONE NO', 'PHONE NUMBER', 'PHONE'], {
-      valuePattern: /([0-9][0-9 ]*)/,
-      clean: v => String(v || '').replace(/\s+/g, '')
-    });
+    let leapAddress = findLabelValue(['HOME ADDR', 'HOME ADDRESS', 'HOMEADDR', 'ADDRESS'], { valuePattern: /([A-Z0-9 ,'.\-]{3,})/, clean: v => String(v || '').trim() });
+    let leapPhone = findLabelValue(['PHONE NO', 'PHONENO', 'PHONE NUMBER', 'PHONE'], { valuePattern: /([0-9][0-9 ]*)/, clean: v => String(v || '').replace(/\s+/g, '') });
 
-    // Victoria licence fallback, positional extraction from screenshots/UI.
-    let vicName = "";
-    let vicAddress = "";
-    if (!leapName) vicName = findAfterHeader([/DRIVER\s*LICEN[CS]E/i, /VICTORIA/i], 1, 10);
-    if (!leapAddress) vicAddress = findAfterHeader([/DRIVER\s*LICEN[CS]E/i, /VICTORIA/i], 2, 10);
-
-    const dobFromGrid = (() => {
-      for (let i = 0; i < upperLines.length - 1; i++) {
-        if (/DATE\s+OF\s+BIRTH/i.test(upperLines[i])) {
-          const dates = cleanedRaw[i + 1].match(/[0-9]{1,4}[\-\/][0-9]{1,2}[\-\/][0-9]{1,4}/g);
-          if (dates && dates.length) return normaliseDate(dates[dates.length - 1]);
-        }
+    let vicName = '';
+    let vicAddress = '';
+    const licenceHeaderIndex = upperLines.findIndex(line => /DRIVER\s*LICEN[CS]E|VICTORIA\s+AUSTRALIA/i.test(line));
+    if (licenceHeaderIndex >= 0) {
+      const body = cleanedRaw.slice(licenceHeaderIndex, licenceHeaderIndex + 12);
+      const useful = body.filter(line => !/^(DRIVER\s*LICEN[CS]E|VICTORIA\s+AUSTRALIA|LICEN[CS]E\s*NO\.?|VICROADS|NO PHOTO)$/i.test(line));
+      const nameLine = useful.find(line => /[A-Z]/i.test(line) && !/\d/.test(line) && !/LICEN[CS]E TYPE|DATE OF BIRTH|EXPIRY/i.test(line));
+      const addrLine = useful.find(line => /\d/.test(line) || /LOS SANTOS|VINEWOOD|DESERT|LAP|WAY|LANE|ROAD|HILLS|HOUSE|GUY/i.test(line));
+      if (!leapName && nameLine) vicName = nameLine;
+      if (!leapAddress && addrLine) vicAddress = addrLine;
+      if (!leapDob) {
+        const cardDates = useful.join(' ').match(/\b\d{2}[\-\/]\d{2}[\-\/]\d{4}\b/g) || [];
+        if (cardDates.length) leapDob = cardDates[cardDates.length - 1];
       }
-      return "";
-    })();
-
-    const licenceTypeFromGrid = (() => {
-      const sameLine = findLabelValue(['LICENCE TYPE', 'LICENSE TYPE'], {
-        valuePattern: /([A-Z][A-Z ]{0,20})/,
-        clean: v => String(v || '').trim()
-      });
-      if (sameLine) return sameLine;
-      for (let i = 0; i < upperLines.length - 1; i++) {
-        if (/LICEN[CS]E\s+TYPE/i.test(upperLines[i])) {
-          const next = cleanedRaw[i + 1] || "";
-          if (/^[A-Z][A-Z ]{0,15}$/.test(next)) return next.trim();
-        }
-      }
-      return "";
-    })();
+    }
 
     const outName = flipName(leapName || vicName);
-    const outDob = leapDob || dobFromGrid;
-    const outAddress = leapAddress || vicAddress;
-
-    const licClass = findLabelValue(['LIC CLASS', 'LICENCE TYPE'], {
-      valuePattern: /([A-Z][A-Z ]{0,30})/,
-      clean: v => String(v || '').trim()
-    }) || licenceTypeFromGrid;
-
-    const licStatus = findLabelValue(['LIC STATUS'], {
-      valuePattern: /(CURRENT|EXPIRED|SUSPENDED)/i,
-      clean: v => String(v || '').toUpperCase().trim()
-    });
-
-    const expires = (() => {
-      const same = findLabelValue(['EXPIRES', 'LICENCE EXPIRY', 'LICENSE EXPIRY'], {
-        valuePattern: /([0-9A-Z:\-\/ ]+(?:AM|PM)?)/i,
-        clean: v => String(v || '').trim()
-      });
-      if (same) return same;
-      for (let i = 0; i < upperLines.length - 1; i++) {
-        if (/LICEN[CS]E\s+EXPIRY/i.test(upperLines[i])) {
-          const dates = cleanedRaw[i + 1].match(/[0-9]{1,4}[\-\/][0-9]{1,2}[\-\/][0-9]{1,4}(?:\s+[0-9:]+\s*(?:AM|PM)?)?/ig);
-          if (dates && dates.length) return dates[0].trim();
-        }
-      }
-      return "";
+    const outDob = leapDob;
+    const outAddress = (leapAddress || vicAddress || '').replace(/\s+/g, ' ').trim().toUpperCase();
+    const licClass = findInlineField('LIC CLASS', ['LIC STATUS']) || findInlineField('UC CLASS', ['LIC STATUS','UCSTATUS']) || findLabelValue(['LIC CLASS', 'UC CLASS', 'LICENCE TYPE'], { valuePattern: /([A-Z][A-Z ]{0,40})/, clean: v => String(v || '').trim() }) || (() => {
+      const line = upperLines.find(x => /^([CRHWL]\s*){1,6}$/.test(x.replace(/\s+/g, ' ').trim()));
+      return line ? line.replace(/\s+/g, ' ').trim() : '';
     })();
-
+    const licStatus = (findInlineField('LIC STATUS', ['EXPIRES']) || findInlineField('UC STATUS', ['EXPIRES']) || findInlineField('UCSTATUS', ['EXPIRES']) || findLabelValue(['LIC STATUS', 'UC STATUS', 'UCSTATUS'], { valuePattern: /(CURRENT|EXPIRED|SUSPENDED)/i, clean: v => String(v || '').toUpperCase().trim() })).toUpperCase();
+    let expires = (() => {
+      const same = findLabelValue(['EXPIRES', 'LICENCE EXPIRY', 'LICENSE EXPIRY'], { valuePattern: /([0-9A-Z:\-\/ ]+(?:AM|PM|HRS)?)/i, clean: v => String(v || '').trim() });
+      if (same) return normaliseDate(same);
+      const dates = raw.match(/\b\d{2}[\-\/]\d{2}[\-\/]\d{4}(?:\s+[0-9:]+\s*(?:AM|PM|HRS)?)?/ig) || [];
+      return dates.length ? normaliseDate(dates[0]) : '';
+    })();
     const demeritPoints = (() => {
       const m = upper.match(/DEM[E3]R[I1]T\s+PTS?\s*[:;.,-]*\s*(\d+)/i);
       return m ? parseInt(m[1], 10) : 0;
     })();
 
+    const itemLines = [];
+    const pushItem = (value) => {
+      const clean = cleanOcrLine(value);
+      if (!clean) return;
+      if (!itemLines.some(x => x.toUpperCase() === clean.toUpperCase())) itemLines.push(clean);
+    };
+    const weaponNameUpper = String(weaponCard?.name || '').toUpperCase();
+    inventoryHits.filter(line => String(line || '').toUpperCase() !== weaponNameUpper).forEach(pushItem);
+    (weaponCard?.itemLines || []).forEach(pushItem);
+
     return {
-      offender: {
-        name: outName,
-        dob: outDob,
-        sex: leapSex,
-        address: outAddress,
-        phone: leapPhone
-      },
-      meta: {
-        enteredBy: findLabelValue(['ENTERED BY'], { valuePattern: /([A-Z0-9 .,'\/-]+)/i }),
-        unit: findLabelValue(['UNIT'], { valuePattern: /([A-Z0-9|\/ .,'\-]+)/i })
-      },
+      offender: { name: outName, dob: outDob, sex: leapSex, address: outAddress, phone: leapPhone },
+      meta: { enteredBy: findLabelValue(['ENTERED BY'], { valuePattern: /([A-Z0-9 .,'\/\-]+)/i }), unit: findLabelValue(['UNIT'], { valuePattern: /([A-Z0-9|\/ .,'\-]+)/i }), drugTest: drugResult },
       license: {
-        demeritPoints,
-        licenseStatus: licStatus,
-        licenseClass: licClass,
-        expires,
-        wanted: normaliseBool(findLabelValue(['WANTED'], { valuePattern: /([A-Z0-9]+)/i })),
-        bail: normaliseBool(findLabelValue(['BAIL'], { valuePattern: /([A-Z0-9]+)/i })),
-        mentalHealth: normaliseBool(findLabelValue(['MEN. HEALTH', 'MENTAL HEALTH'], { valuePattern: /([A-Z0-9]+)/i })),
-        violencePolice: normaliseBool(findLabelValue(['VIOLENCE POLICE'], { valuePattern: /([A-Z0-9]+)/i })),
-        violence: normaliseBool(findLabelValue(['VIOLENCE'], { valuePattern: /([A-Z0-9]+)/i })),
-        possWeap: normaliseBool(findLabelValue(['POS WEAP', 'POSS WEAP'], { valuePattern: /([A-Z0-9]+)/i })),
-        weaponLongarm: normaliseBool(findLabelValue(['WEAPON LONGARM', 'LONGARM'], { valuePattern: /([A-Z0-9]+)/i })),
-        weaponHandgun: normaliseBool(findLabelValue(['HANDGUN'], { valuePattern: /([A-Z0-9]+)/i })),
-        concealCarry: normaliseBool(findLabelValue(['CONCEAL CARRY PERMIT', 'CONCEAL CARRY'], { valuePattern: /([A-Z0-9]+)/i })),
-        firearmProhibOrder: normaliseBool(findLabelValue(['F/ARM PROHIB ORDER', 'F ARM PROHIB ORDER'], { valuePattern: /([A-Z0-9]+)/i }))
+        demeritPoints, licenseStatus: licStatus, licenseClass: licClass, expires,
+        wanted: normaliseBool(findLabelValue(['WANTED'], { valuePattern: /([A-Z0-9\- ]+)/i })),
+        bail: normaliseBool(findLabelValue(['BAIL'], { valuePattern: /([A-Z0-9\- ]+)/i })),
+        mentalHealth: normaliseBool(findLabelValue(['MEN. HEALTH', 'MENTAL HEALTH'], { valuePattern: /([A-Z0-9\- ]+)/i })),
+        gangAffiliation: normaliseBool(findInlineField('GANG AFF', ['VIOLENCE POLICE', 'VIOLENCE', 'POS WEAP']) || findLabelValue(['GANG AFF', 'GANG AF'], { valuePattern: /(YES(?:\s*-\s*SHORT TERM)?|NO)/i })),
+        violencePolice: normaliseBool(findInlineField('VIOLENCE POLICE', ['VIOLENCE']) || findLabelValue(['VIOLENCE POLICE'], { valuePattern: /(YES(?:\s*-\s*SHORT TERM)?|NO)/i })),
+        violence: normaliseBool(findInlineField('VIOLENCE', ['WEAPON LICENCES']) || findLabelValue(['VIOLENCE'], { valuePattern: /(YES(?:\s*-\s*SHORT TERM)?|NO)/i })),
+        possWeap: normaliseBool(findInlineField('POS WEAP', ['VIOLENCE']) || findLabelValue(['POS WEAP', 'POSS WEAP'], { valuePattern: /(YES(?:\s*-\s*SHORT TERM)?|NO)/i })),
+        weaponLongarm: normaliseBool(findInlineField('WEAPON LONGARM', ['HANDGUN']) || findLabelValue(['WEAPON LONGARM', 'LONGARM'], { valuePattern: /(YES(?:\s*-\s*SHORT TERM)?|NO)/i })),
+        weaponHandgun: normaliseBool(findInlineField('HANDGUN', ['CONCEAL CARRY PERMIT']) || findLabelValue(['HANDGUN'], { valuePattern: /(YES(?:\s*-\s*SHORT TERM)?|NO)/i })),
+        concealCarry: normaliseBool(findInlineField('CONCEAL CARRY PERMIT', ['F/ARM PROHIB ORDER']) || findLabelValue(['CONCEAL CARRY PERMIT', 'CONCEAL CARRY'], { valuePattern: /(YES(?:\s*-\s*SHORT TERM)?|NO)/i })),
+        firearmProhibOrder: normaliseBool(findInlineField('F/ARM PROHIB ORDER') || findInlineField('F ARM PROHIB ORDER') || findLabelValue(['F/ARM PROHIB ORDER', 'F ARM PROHIB ORDER'], { valuePattern: /(YES(?:\s*-\s*SHORT TERM)?|NO)/i }))
       },
       officerNames,
       itemLines,
       vehicle: {
-        rego: findLabelValue(['REGISTRATION', 'REGO', 'LICENCE PLATE', 'LICENSE PLATE', 'PLATE'], { valuePattern: /([A-Z0-9 \-]{3,12})/i }).toUpperCase(),
+        rego: String(findLabelValue(['REGISTRATION', 'REGO', 'LICENCE PLATE', 'LICENSE PLATE', 'PLATE'], { valuePattern: /([A-Z0-9 \-]{3,12})/i }) || '').toUpperCase().replace(/\s+/g, ' ').trim(),
         model: findLabelValue(['MODEL'], { valuePattern: /([A-Z0-9 \-]{2,40})/i }).toUpperCase(),
         colour: findLabelValue(['COLOUR', 'COLOR'], { valuePattern: /([A-Z0-9 \-]{2,30})/i }).toUpperCase(),
-        registered: normaliseBool(findLabelValue(['REGISTERED'], { valuePattern: /([A-Z0-9]+)/i })),
-        expires: findLabelValue(['EXPIRES'], { valuePattern: /([0-9A-Z:\-\/ ]+(?:AM|PM)?)/i }).trim(),
-        stolen: normaliseBool(findLabelValue(['STOLEN'], { valuePattern: /([A-Z0-9]+)/i })),
-        suspended: normaliseBool(findLabelValue(['SUSPENDED'], { valuePattern: /([A-Z0-9]+)/i })),
+        registered: normaliseBool(findLabelValue(['REGISTERED'], { valuePattern: /([A-Z0-9\- ]+)/i })),
+        expires: findLabelValue(['EXPIRES'], { valuePattern: /([0-9A-Z:\-\/ ]+(?:AM|PM|HRS)?)/i }).trim(),
+        stolen: normaliseBool(findLabelValue(['STOLEN'], { valuePattern: /([A-Z0-9\- ]+)/i })),
+        suspended: normaliseBool(findLabelValue(['SUSPENDED'], { valuePattern: /([A-Z0-9\- ]+)/i })),
         owner: flipName(findLabelValue(['OWNER', 'REGISTERED OWNER'], { valuePattern: /([A-Z][A-Z ,'.\-]{2,})/i }))
-      }
+      },
+      weaponCard
     };
   }
 
@@ -703,33 +821,36 @@
     throw lastError || new Error("Unable to start OCR worker");
   }
 
+
+  async function runBlobThroughStyle(worker, blob, style = 'processed', psm = '6') {
+    const processed = (style === 'processed') ? await preprocessImage(blob) : (typeof preprocessImageVariant === 'function' ? await preprocessImageVariant(blob, style, { scale: 1 }) : await preprocessImage(blob));
+    return recognizeWithWorker(worker, processed, psm);
+  }
+
   async function runRegionalOCRPasses(worker, originalBlob) {
     const img = await blobToImage(originalBlob);
     const ratio = img.width && img.height ? img.width / img.height : 1;
-    const landscape = ratio >= 1.3;
-
-    const regions = landscape
-      ? [
-          { label: "LEFT PANEL", rect: { x: 0.00, y: 0.10, w: 0.58, h: 0.82 }, scale: 2.2, psm: "6" },
-          { label: "LEFT CENTRE", rect: { x: 0.00, y: 0.18, w: 0.50, h: 0.60 }, scale: 2.5, psm: "6" },
-          { label: "CENTRE PANEL", rect: { x: 0.10, y: 0.08, w: 0.80, h: 0.82 }, scale: 2.0, psm: "11" },
-          { label: "LOWER LEFT", rect: { x: 0.00, y: 0.46, w: 0.58, h: 0.38 }, scale: 2.1, psm: "6" }
-        ]
-      : [
-          { label: "MAIN PANEL", rect: { x: 0.04, y: 0.06, w: 0.92, h: 0.88 }, scale: 2.2, psm: "6" },
-          { label: "UPPER PANEL", rect: { x: 0.04, y: 0.04, w: 0.92, h: 0.54 }, scale: 2.3, psm: "6" }
-        ];
-
+    const landscape = ratio >= 1.18;
+    const regions = landscape ? [
+      { label: 'LEAP FULL', rect: { x: 0.02, y: 0.04, w: 0.96, h: 0.92 }, scale: 2.1, psm: '6', styles: ['green', 'darkpanel', 'adaptive'] },
+      { label: 'LEFT LICENCE / PANEL', rect: { x: 0.00, y: 0.12, w: 0.54, h: 0.76 }, scale: 2.2, psm: '6', styles: ['licensecard', 'adaptive', 'threshold'] },
+      { label: 'INVENTORY FULL', rect: { x: 0.00, y: 0.00, w: 1.00, h: 1.00 }, scale: 2.0, psm: '11', styles: ['inventory', 'adaptive', 'threshold'] },
+      { label: 'OVERLAY DETAIL', rect: { x: 0.08, y: 0.05, w: 0.62, h: 0.54 }, scale: 2.4, psm: '6', styles: ['hovercard', 'darkpanel', 'adaptive'] },
+      { label: 'RESULT BANNER', rect: { x: 0.00, y: 0.00, w: 0.50, h: 0.24 }, scale: 2.8, psm: '7', styles: ['banner', 'threshold', 'invert'] }
+    ] : [
+      { label: 'LICENCE CARD', rect: { x: 0.00, y: 0.00, w: 1.00, h: 1.00 }, scale: 2.5, psm: '6', styles: ['licensecard', 'adaptive', 'threshold'] },
+      { label: 'DETAIL CARD', rect: { x: 0.00, y: 0.00, w: 1.00, h: 1.00 }, scale: 2.8, psm: '6', styles: ['hovercard', 'darkpanel', 'adaptive'] },
+      { label: 'RESULT BANNER', rect: { x: 0.00, y: 0.00, w: 1.00, h: 1.00 }, scale: 3.0, psm: '7', styles: ['banner', 'threshold', 'invert'] }
+    ];
     let best = null;
     for (const region of regions) {
       const cropped = await cropBlobFromImageBlob(originalBlob, region.rect, { scale: region.scale || 2 });
-      const processed = await preprocessImage(cropped);
-      const result = await recognizeWithWorker(worker, processed, region.psm || "6");
-      const text = postProcessOCR(result.text || "");
-      const parsed = parseOCR(text);
-      const score = scoreParsedOCRBundle(parsed) + ((result.confidence || 0) / 100);
-      if (!best || score > best.score) {
-        best = { label: region.label, text, parsed, score };
+      for (const style of (region.styles || ['processed'])) {
+        const result = await runBlobThroughStyle(worker, cropped, style, region.psm || '6');
+        const text = postProcessOCR(result.text || '');
+        const parsed = parseOCR(text);
+        const score = scoreParsedOCRBundle(parsed) + ((result.confidence || 0) / 100) + ((parsed.itemLines || []).length * 0.6);
+        if (!best || score > best.score) best = { label: `${region.label} • ${style}`, text, parsed, score };
       }
     }
     return best;
@@ -737,30 +858,26 @@
 
   async function detectAndParseLicenceFromImage(worker, originalBlob) {
     const candidateRects = [
-      { x: 0.00, y: 0.20, w: 0.42, h: 0.52 },
-      { x: 0.00, y: 0.16, w: 0.40, h: 0.46 },
-      { x: 0.00, y: 0.26, w: 0.44, h: 0.50 },
-      { x: 0.00, y: 0.32, w: 0.44, h: 0.44 },
-      { x: 0.02, y: 0.18, w: 0.34, h: 0.44 }
+      { x: 0.00, y: 0.00, w: 1.00, h: 1.00 },
+      { x: 0.00, y: 0.16, w: 0.46, h: 0.58 },
+      { x: 0.00, y: 0.12, w: 0.52, h: 0.64 },
+      { x: 0.00, y: 0.22, w: 0.44, h: 0.52 },
+      { x: 0.02, y: 0.14, w: 0.42, h: 0.54 }
     ];
     let best = null;
-
     for (const rect of candidateRects) {
-      const leftBlob = await cropBlobFromImageBlob(originalBlob, rect, { scale: 2 });
-      const zoneTop = await cropBlobFromImageBlob(leftBlob, { x: 0.02, y: 0.00, w: 0.73, h: 0.42 }, { scale: 2 });
-      const zoneMid = await cropBlobFromImageBlob(leftBlob, { x: 0.00, y: 0.40, w: 0.72, h: 0.22 }, { scale: 2 });
-      const zoneBottom = await cropBlobFromImageBlob(leftBlob, { x: 0.00, y: 0.60, w: 0.62, h: 0.18 }, { scale: 2 });
-
-      const [t1, t2, t3] = await Promise.all([
-        recognizeWithWorker(worker, zoneTop, '6'),
-        recognizeWithWorker(worker, zoneMid, '6'),
-        recognizeWithWorker(worker, zoneBottom, '7')
-      ]);
-      const parsed = parseLicenceZoneText({ top: t1.text, middle: t2.text, bottom: t3.text });
-      const confBonus = ((t1.confidence + t2.confidence + t3.confidence) / 3) / 100;
-      const totalScore = parsed.score + confBonus;
-      if (!best || totalScore > best.totalScore) {
-        best = { parsed, rect, totalScore, text: [t1.text, t2.text, t3.text].join('\n') };
+      const leftBlob = await cropBlobFromImageBlob(originalBlob, rect, { scale: 2.5 });
+      const variants = [{ style: 'licensecard', blob: leftBlob }, { style: 'adaptive', blob: leftBlob }, { style: 'threshold', blob: leftBlob }];
+      for (const variant of variants) {
+        const baseBlob = (typeof preprocessImageVariant === 'function') ? await preprocessImageVariant(variant.blob, variant.style, { scale: 1 }) : await preprocessImage(variant.blob);
+        const zoneTop = await cropBlobFromImageBlob(baseBlob, { x: 0.02, y: 0.00, w: 0.82, h: 0.46 }, { scale: 2.2 });
+        const zoneMid = await cropBlobFromImageBlob(baseBlob, { x: 0.00, y: 0.36, w: 0.82, h: 0.24 }, { scale: 2.2 });
+        const zoneBottom = await cropBlobFromImageBlob(baseBlob, { x: 0.00, y: 0.58, w: 0.72, h: 0.22 }, { scale: 2.2 });
+        const [t1, t2, t3] = await Promise.all([recognizeWithWorker(worker, zoneTop, '6'), recognizeWithWorker(worker, zoneMid, '6'), recognizeWithWorker(worker, zoneBottom, '7')]);
+        const parsed = parseLicenceZoneText({ top: t1.text, middle: t2.text, bottom: t3.text });
+        const confBonus = ((t1.confidence + t2.confidence + t3.confidence) / 3) / 100;
+        const totalScore = parsed.score + confBonus;
+        if (!best || totalScore > best.totalScore) best = { parsed, rect, totalScore, text: [t1.text, t2.text, t3.text].join('\n') };
       }
     }
     return best;

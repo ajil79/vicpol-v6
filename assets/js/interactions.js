@@ -1152,7 +1152,11 @@
           adaptive: 0.82,
           denoise: 0.95,
           morph: 0.82,
-          clahe: 0.80
+          clahe: 0.80,
+          inventory: 0.84,
+          hovercard: 0.68,
+          licensecard: 0.90,
+          banner: 0.76
         };
         const contrastMap = {
           detail: 1.45,
@@ -1166,7 +1170,11 @@
           adaptive: 1.75,
           denoise: 1.35,
           morph: 1.8,
-          clahe: 1.55
+          clahe: 1.55,
+          inventory: 1.95,
+          hovercard: 2.1,
+          licensecard: 1.55,
+          banner: 2.2
         };
 
         const gamma = gammaMap[style] || 0.9;
@@ -1231,14 +1239,14 @@
         };
 
         let working = gray;
-        if (['denoise', 'adaptive', 'morph', 'clahe'].includes(style)) working = median3(working);
+        if (['denoise', 'adaptive', 'morph', 'clahe', 'inventory', 'hovercard', 'licensecard', 'banner'].includes(style)) working = median3(working);
 
-        const localMean = ['clahe', 'adaptive', 'morph', 'darkpanel', 'brightrecover'].includes(style)
-          ? meanBlur(working, style === 'darkpanel' ? 10 : 7)
+        const localMean = ['clahe', 'adaptive', 'morph', 'darkpanel', 'brightrecover', 'inventory', 'hovercard', 'licensecard', 'banner'].includes(style)
+          ? meanBlur(working, style === 'darkpanel' || style === 'hovercard' ? 10 : 7)
           : null;
 
         const sharpened = new Uint8Array(totalPixels);
-        const sharpenStrength = style === 'detail' ? 0.6 : (style === 'green' || style === 'darkpanel' ? 0.72 : 0.48);
+        const sharpenStrength = style === 'detail' ? 0.6 : (style === 'green' || style === 'darkpanel' || style === 'hovercard' ? 0.72 : (style === 'inventory' ? 0.66 : 0.48));
         for (let y = 0; y < canvas.height; y++) {
           for (let x = 0; x < canvas.width; x++) {
             const idx = y * canvas.width + x;
@@ -1261,12 +1269,15 @@
         for (let i = 0; i < totalPixels; i++) {
           let v = clamp255((sharpened[i] - 128) * contrast + 128);
           if (style === 'darkpanel' && localMean) v = clamp255(v + Math.max(0, 110 - localMean[i]) * 0.45);
+          if (style === 'hovercard' && localMean) v = clamp255(v + Math.max(0, 118 - localMean[i]) * 0.55);
+          if (style === 'banner' && localMean) v = clamp255(v + Math.max(0, 125 - localMean[i]) * 0.65);
+          if (style === 'licensecard' && localMean) v = clamp255(v + (128 - localMean[i]) * 0.12);
           if (style === 'brightrecover' && localMean) v = clamp255(v + (128 - localMean[i]) * 0.22);
           contrasted[i] = v;
         }
 
         let globalThreshold = 128;
-        if (['threshold', 'binaryInvert', 'green', 'darkpanel'].includes(style)) {
+        if (['threshold', 'binaryInvert', 'green', 'darkpanel', 'inventory', 'hovercard', 'licensecard', 'banner'].includes(style)) {
           const hist = new Uint32Array(256);
           for (let i = 0; i < totalPixels; i++) hist[contrasted[i]]++;
           let weightedTotal = 0;
@@ -1292,7 +1303,7 @@
         for (let i = 0; i < totalPixels; i++) {
           let v = contrasted[i];
           if (style === 'invert') v = 255 - v;
-          if (['threshold', 'binaryInvert', 'green', 'darkpanel'].includes(style)) {
+          if (['threshold', 'binaryInvert', 'green', 'darkpanel', 'inventory', 'hovercard', 'licensecard', 'banner'].includes(style)) {
             v = v > globalThreshold ? 255 : 0;
             if (style === 'binaryInvert') v = 255 - v;
           } else if (style === 'adaptive' || style === 'morph') {
@@ -1342,6 +1353,10 @@
       ['Dark panel', 'darkpanel'],
       ['Green text', 'green'],
       ['Threshold', 'threshold'],
+      ['Inventory', 'inventory'],
+      ['Hovercard', 'hovercard'],
+      ['Licence', 'licensecard'],
+      ['Banner', 'banner'],
       ['Bright recover', 'brightrecover'],
       ['Invert', 'invert']
     ];
@@ -1381,9 +1396,11 @@
     if (!parsed) return score;
     if (norm(parsed.vehicle?.owner)) score += 1.5;
     if (norm(parsed.vehicle?.model)) score += 1;
-    if ((parsed.itemLines || []).length) score += Math.min(4, (parsed.itemLines || []).length * 0.8);
+    if ((parsed.itemLines || []).length) score += Math.min(5, (parsed.itemLines || []).length * 0.9);
     if ((parsed.officerNames || []).length) score += Math.min(2, (parsed.officerNames || []).length * 0.5);
     if (norm(parsed.license?.weaponHandgun) || norm(parsed.license?.weaponLongarm)) score += 1;
+    if (norm(parsed.meta?.drugTest)) score += 1.4;
+    if (norm(parsed.weaponCard?.serial)) score += 1.2;
     return score;
   }
 
@@ -1401,19 +1418,24 @@
     const passes = [];
     const targets = [];
     if (mode === 'auto' || mode === 'person' || mode === 'vehicle') {
-      targets.push({ label: 'MDT PANEL', rect: { x: 0.42, y: 0.14, w: 0.56, h: 0.72 }, styles: ['green', 'darkpanel', 'adaptive', 'detail'], psm: '6' });
-      targets.push({ label: 'RIGHT INFO PANEL', rect: { x: 0.68, y: 0.16, w: 0.30, h: 0.70 }, styles: ['detail', 'adaptive', 'brightrecover', 'invert'], psm: '6' });
+      targets.push({ label: 'MDT PANEL', rect: { x: 0.40, y: 0.10, w: 0.58, h: 0.78 }, styles: ['green', 'darkpanel', 'adaptive', 'detail'], psm: '6' });
+      targets.push({ label: 'LEAP FULL', rect: { x: 0.02, y: 0.04, w: 0.96, h: 0.92 }, styles: ['green', 'darkpanel', 'adaptive'], psm: '6' });
     }
     if (mode === 'auto' || mode === 'weapons') {
-      targets.push({ label: 'RIGHT DETAIL PANEL', rect: { x: 0.62, y: 0.18, w: 0.36, h: 0.68 }, styles: ['adaptive', 'morph', 'threshold', 'detail', 'invert'], psm: '6' });
+      targets.push({ label: 'HOVERCARD LEFT', rect: { x: 0.04, y: 0.02, w: 0.54, h: 0.54 }, styles: ['hovercard', 'darkpanel', 'adaptive', 'threshold'], psm: '6' });
+      targets.push({ label: 'HOVERCARD MID', rect: { x: 0.14, y: 0.04, w: 0.60, h: 0.56 }, styles: ['hovercard', 'darkpanel', 'adaptive', 'threshold'], psm: '6' });
+      targets.push({ label: 'INVENTORY FULL', rect: { x: 0.00, y: 0.00, w: 1.00, h: 1.00 }, styles: ['inventory', 'adaptive', 'threshold'], psm: '11' });
+      targets.push({ label: 'UPPER INVENTORY', rect: { x: 0.00, y: 0.00, w: 1.00, h: 0.45 }, styles: ['inventory', 'adaptive'], psm: '11' });
+      targets.push({ label: 'LOWER INVENTORY', rect: { x: 0.00, y: 0.40, w: 1.00, h: 0.60 }, styles: ['inventory', 'adaptive'], psm: '11' });
+      targets.push({ label: 'RESULT BANNER', rect: { x: 0.00, y: 0.00, w: 0.50, h: 0.24 }, styles: ['banner', 'threshold', 'invert'], psm: '7' });
     }
     if (mode === 'auto' || mode === 'license') {
-      targets.push({ label: 'LEFT LICENCE PANEL', rect: { x: 0.00, y: 0.18, w: 0.44, h: 0.52 }, styles: ['detail', 'gamma', 'adaptive', 'threshold', 'brightrecover', 'invert'], psm: '6' });
+      targets.push({ label: 'LICENCE FULL', rect: { x: 0.00, y: 0.00, w: 1.00, h: 1.00 }, styles: ['licensecard', 'adaptive', 'threshold'], psm: '6' });
+      targets.push({ label: 'LEFT LICENCE PANEL', rect: { x: 0.00, y: 0.16, w: 0.52, h: 0.60 }, styles: ['licensecard', 'adaptive', 'threshold', 'brightrecover'], psm: '6' });
     }
-
     let best = null;
     for (const target of targets) {
-      const cropped = await cropBlobFromImageBlob(originalBlob, target.rect, { scale: 2.3 });
+      const cropped = await cropBlobFromImageBlob(originalBlob, target.rect, { scale: target.psm === '11' ? 2.0 : 2.5 });
       for (const style of target.styles) {
         const pass = await runSingleOcrLabPass(worker, cropped, `${target.label} • ${style}`, style, target.psm || '6');
         passes.push(pass);
@@ -1443,8 +1465,14 @@
       ['Address', parsed.offender?.address],
       ['Phone', parsed.offender?.phone],
       ['Licence class', parsed.license?.licenseClass],
+      ['Licence status', parsed.license?.licenseStatus],
       ['Expiry', parsed.license?.expires],
-      ['Demerit pts', parsed.license?.demeritPoints ? String(parsed.license.demeritPoints) : '']
+      ['Demerit pts', parsed.license?.demeritPoints ? String(parsed.license.demeritPoints) : ''],
+      ['Drug result', parsed.meta?.drugTest],
+      ['Gang Aff', parsed.license?.gangAffiliation],
+      ['Violence Police', parsed.license?.violencePolice],
+      ['Longarm', parsed.license?.weaponLongarm],
+      ['Handgun', parsed.license?.weaponHandgun]
     ].filter(row => norm(row[1]));
     const vehicleRows = [
       ['Rego', parsed.vehicle?.rego],
@@ -1457,6 +1485,7 @@
       ['Owner', parsed.vehicle?.owner]
     ].filter(row => norm(row[1]));
     const itemRows = (parsed.itemLines || []).map((line, idx) => [`Item ${idx + 1}`, line]);
+    if (parsed.weaponCard?.serial) itemRows.unshift(['Serial', parsed.weaponCard.serial]);
     renderOcrLabRows(document.getElementById('ocrLabPersonFields'), personRows);
     renderOcrLabRows(document.getElementById('ocrLabVehicleFields'), vehicleRows);
     renderOcrLabRows(document.getElementById('ocrLabItemsFields'), itemRows);
