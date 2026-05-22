@@ -153,8 +153,7 @@
     ids.forEach(id => {
       const node = document.getElementById(id);
       if (!node) return;
-      if (node.tagName === 'SELECT') node.value = '';
-      else node.value = '';
+      node.value = '';
     });
     const idle = document.getElementById('vicIdle');
     const wrap = document.getElementById('vicChecklistWrap');
@@ -464,7 +463,7 @@
         const closeBtn = event.target.closest('.validation-close-btn');
         if (closeBtn) {
           const panel = closeBtn.closest('.validation-panel');
-          if (panel && panel.parentElement) panel.parentElement.innerHTML = '';
+          if (panel) panel.remove();
           return;
         }
 
@@ -556,7 +555,15 @@
 
   function ttAnalyse() {
     const text = (document.getElementById('ttLeap')?.value || '').trim();
-    if (!text) { document.getElementById('ttResults').style.display = 'none'; return; }
+    const ttResultsEl = document.getElementById('ttResults');
+    const ttIcEl = document.getElementById('ttImpoundCount');
+    const ttP7El = document.getElementById('ttPts7');
+    const ttP30El = document.getElementById('ttPts30');
+    const ttResetEl = document.getElementById('ttImpoundReset');
+    const ttWarnEl = document.getElementById('ttWarnings');
+    const ttNextEl = document.getElementById('ttNextImpoundContent');
+    if (!ttResultsEl) return;
+    if (!text) { ttResultsEl.style.display = 'none'; return; }
 
     const now = Date.now();
     const MS_7 = 7*24*60*60*1000, MS_30 = 30*24*60*60*1000;
@@ -599,28 +606,24 @@
     const next = TT_IMPOUND_SCHEDULE[nextNum - 1];
 
     // Show results
-    document.getElementById('ttResults').style.display = 'block';
+    ttResultsEl.style.display = 'block';
 
     // Stats
-    const ic = document.getElementById('ttImpoundCount');
-    ic.textContent = display;
-    ic.style.color = display >= 10 ? 'rgba(255,100,100,0.95)' : display >= 6 ? 'rgba(255,180,80,0.95)' : 'var(--accent)';
-    document.getElementById('ttImpoundReset').textContent = total > 0 ? `${total} total` + (Math.floor(total/12) > 0 ? ` (reset ${Math.floor(total/12)}x)` : '') : '';
-
-    const p7 = document.getElementById('ttPts7'), p30 = document.getElementById('ttPts30');
-    p7.textContent = pts7; p7.style.color = pts7 >= 12 ? 'rgba(255,100,100,0.95)' : 'var(--accent)';
-    p30.textContent = pts30; p30.style.color = pts30 >= 36 ? 'rgba(255,100,100,0.95)' : 'var(--accent)';
+    if (ttIcEl) { ttIcEl.textContent = display; ttIcEl.style.color = display >= 10 ? 'rgba(255,100,100,0.95)' : display >= 6 ? 'rgba(255,180,80,0.95)' : 'var(--accent)'; }
+    if (ttResetEl) ttResetEl.textContent = total > 0 ? `${total} total` + (Math.floor(total/12) > 0 ? ` (reset ${Math.floor(total/12)}x)` : '') : '';
+    if (ttP7El) { ttP7El.textContent = pts7; ttP7El.style.color = pts7 >= 12 ? 'rgba(255,100,100,0.95)' : 'var(--accent)'; }
+    if (ttP30El) { ttP30El.textContent = pts30; ttP30El.style.color = pts30 >= 36 ? 'rgba(255,100,100,0.95)' : 'var(--accent)'; }
 
     // Warnings
     let warn = '';
     if (pts7 >= 12) warn += `<div style="padding:10px 14px;border-radius:10px;margin-bottom:8px;background:rgba(255,200,60,0.12);border:1px solid rgba(255,200,60,0.3);color:rgba(255,220,120,0.95);font-size:12px;font-weight:700">⚠ ${pts7} DEMERITS IN 7 DAYS — CONSIDER SUSPENSION</div>`;
     if (pts30 >= 36) warn += `<div style="padding:10px 14px;border-radius:10px;margin-bottom:8px;background:rgba(255,200,60,0.12);border:1px solid rgba(255,200,60,0.3);color:rgba(255,220,120,0.95);font-size:12px;font-weight:700">⚠ ${pts30} DEMERITS IN 30 DAYS — CONSIDER REVOCATION</div>`;
     if (display === 12) warn += `<div style="padding:10px 14px;border-radius:10px;margin-bottom:8px;background:rgba(255,60,60,0.12);border:1px solid rgba(255,60,60,0.3);color:rgba(255,160,160,0.95);font-size:12px;font-weight:700">⚠ IMPOUND #12 — VEHICLE CRUSH</div>`;
-    document.getElementById('ttWarnings').innerHTML = warn;
+    if (ttWarnEl) ttWarnEl.innerHTML = warn;
 
     // Next impound
-    const ne = document.getElementById('ttNextImpoundContent');
-    if (next) {
+    const ne = ttNextEl;
+    if (next && ne) {
       const crush = next.duration === 'VEHICLE CRUSH';
       const col = crush ? 'rgba(255,100,100,0.95)' : 'var(--text)';
       ne.innerHTML = `<span style="font-size:22px;font-weight:900;color:${col}">Offence #${next.n}</span>
@@ -1773,6 +1776,7 @@
       ocrLabFileInput.addEventListener('change', () => {
         const f = ocrLabFileInput.files[0];
         if (!f) return;
+        if (!f.type.startsWith('image/')) { toast('Please load an image file', 'warn'); ocrLabFileInput.value = ''; return; }
         ocrLab.blob = f;
         const src = document.getElementById('ocrLabSourcePreview');
         if (src) { src.src = URL.createObjectURL(f); src.style.display = 'block'; }

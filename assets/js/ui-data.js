@@ -1167,6 +1167,7 @@
       el.imgFile.addEventListener("change", () => {
         const file = el.imgFile.files[0];
         if (!file) return;
+        if (!file.type.startsWith('image/')) { toast('Please load an image file', 'warn'); el.imgFile.value = ''; return; }
         ocrLab.blob = file;
         const src = document.getElementById('ocrLabSourcePreview');
         if (src) { src.src = URL.createObjectURL(file); src.style.display = 'block'; }
