@@ -613,6 +613,22 @@
       });
     }
 
+    // Quick-officer buttons (e.g. "Other officers on shift")
+    document.querySelectorAll('.quick-officer').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const val = btn.dataset.officer;
+        if (!val || !el.officersList) return;
+        const existing = (el.officersList.value || "").split("\n").map(l => l.trim().toUpperCase());
+        if (existing.includes(val.toUpperCase())) { toast("Already added", "warn"); return; }
+        const current = (el.officersList.value || "").trimEnd();
+        el.officersList.value = current ? current + "\n" + val : val;
+        state.officersList = el.officersList.value;
+        renderOfficerTags();
+        debouncedRenderPreview();
+        throttledAutosave();
+      });
+    });
+
     // Add callsign button
     if (el.addCallsignBtn && el.newCallsignInput) {
       el.addCallsignBtn.addEventListener("click", () => {
