@@ -41,7 +41,7 @@ window.ITEM_CATALOG = [
         { name: "Drug Pipe", cat: "drugs" }, { name: "Syringes", cat: "drugs" },
         { name: "Cash (mixed denominations)", cat: "drugs" },
         // Gear & Other
-        { name: "Heavy Bulletproof Vest", cat: "gear" }, { name: "Light Bulletproof Vest", cat: "gear" },
+        { name: "Bulletproof Vest", cat: "gear" }, { name: "Heavy Bulletproof Vest", cat: "gear" }, { name: "Light Bulletproof Vest", cat: "gear" },
         { name: "Handcuffs", cat: "gear" }, { name: "NOS Bottles", cat: "gear" },
         { name: "Boosting Tablet", cat: "gear" }, { name: "Car Hacking Device", cat: "gear" },
         { name: "GPS Hacking Device", cat: "gear" }, { name: "Credit Card", cat: "gear" },
