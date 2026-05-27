@@ -37,7 +37,7 @@
 <nav aria-label="Tool navigation" class="tool-nav" id="toolNav" role="tablist">
 <button aria-controls="reportPage" aria-selected="true" class="nav-active" data-tool-page="report" id="tab-report" role="tab">Report Tool</button>
 <button aria-controls="trafficPage" aria-selected="false" data-tool-page="traffic" id="tab-traffic" role="tab">Traffic History</button>
-<button aria-controls="ocrPage" aria-selected="false" data-tool-page="ocr" id="tab-ocr" role="tab">📷 OCR Intake</button>
+<button aria-controls="ocrPage" aria-label="OCR Intake" aria-selected="false" data-tool-page="ocr" id="tab-ocr" role="tab">📷 OCR Intake</button>
 </nav>
 <!-- REPORT TOOL PAGE -->
 <div aria-labelledby="tab-report" class="tool-page active" id="reportPage" role="tabpanel">
@@ -56,6 +56,7 @@
 <option value="search_seizure">Search &amp; Seizure</option>
 <option value="vehicle_inspection">Vehicle Inspection</option>
 </select>
+<div id="reportTypeHint" class="hint" style="margin-top:6px;display:none"><span>💡</span><span id="reportTypeHintText"></span></div>
 <div class="hint" style="margin-top:8px"><span>💡</span><span>Date/time, callsign and unit can still auto-fill from MDT paste or your saved template, but you can now edit them here as well.</span></div>
 <details class="header-meta-details" id="reportHeaderMetaDetails">
 <summary>Report header details</summary>
@@ -503,11 +504,11 @@ Date        P?    Amount        Offence
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><h2 style="margin:0">Report Narrative</h2><button aria-expanded="true" aria-label="Toggle section visibility" class="section-toggle-btn" title="Toggle section in/out of report" type="button">👁</button></div>
 <div class="hint" style="margin-bottom:10px">
 <div style="width:100%">
-<div aria-controls="guidelinesBody" aria-expanded="false" class="guidelines-toggle" id="guidelinesToggle" role="button" tabindex="0">
-<span><span>⚠️</span> <strong>Professional Report Writing Standards</strong> <span style="font-weight:400;color:var(--muted);font-size:11px">— click to expand</span></span>
+<div aria-controls="guidelinesBody" aria-expanded="true" class="guidelines-toggle open" id="guidelinesToggle" role="button" tabindex="0">
+<span><span>⚠️</span> <strong>Professional Report Writing Standards</strong> <span style="font-weight:400;color:var(--muted);font-size:11px">— click to collapse</span></span>
 <span class="chevron">▼</span>
 </div>
-<div class="guidelines-body" id="guidelinesBody">
+<div class="guidelines-body open" id="guidelinesBody">
 <div class="guidelines-body-inner">
                 Reports must be court-ready and stand alone without officer testimony. Include ALL critical details:
                 <ul style="margin:8px 0 0 20px; line-height:1.6">
@@ -546,7 +547,7 @@ Date        P?    Amount        Offence
 <label style="margin-top:8px;display:block"><div class="lbl">Location</div><input id="prelimLocation" placeholder="e.g. Fleeca Bank, PC 584"/></label>
 </div>
 <div>
-<div class="lbl">Summary of Events</div>
+<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px"><div class="lbl" style="margin:0">Summary of Events</div><span id="summaryWordCount" style="font-size:11px;color:var(--muted)"></span></div>
 <textarea id="summary" placeholder="e.g. At the time and date listed above, [CALLSIGN] responded to...
 or: At approximately [TIME] HRS on [DATE], [CALLSIGN] ([NAME]) was on patrol when..." rows="5"></textarea>
 <!-- v47.2: Smart Narrative Prompts — populated dynamically based on charges -->
@@ -608,7 +609,7 @@ or: At approximately [TIME] HRS on [DATE], [CALLSIGN] ([NAME]) was on patrol whe
 </div>
 <!-- Sentence & Evidence -->
 <div class="card" data-section="sentence" id="sentenceCard" style="display:none">
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><h2 style="margin:0">Sentence &amp; Evidence Locker</h2><button class="section-toggle-btn" title="Toggle section in/out of report" type="button">👁</button></div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><h2 style="margin:0">Sentence &amp; Evidence Locker</h2><button aria-expanded="true" aria-label="Toggle section visibility" class="section-toggle-btn" title="Toggle section in/out of report" type="button">👁</button></div>
 <div class="fields">
 <div>
 <div class="lbl" style="margin-bottom:8px">Sentence suggestion from selected charges</div>

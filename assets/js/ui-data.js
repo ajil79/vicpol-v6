@@ -65,6 +65,22 @@
 
   function bindInputs() {
     // Report type
+    const REPORT_TYPE_HINTS = {
+      vicpol_warrant: "Questioning warrant — use when identity is UNCONFIRMED. Suspect placed at scene by evidence (DNA, shells, CCTV) but not directly identified.",
+      vicpol_arrest: "Arrest warrant — use when identity IS CONFIRMED beyond reasonable doubt (licence, MDT, fingerprints, verbal confirmation).",
+      bail_conditions: "Use after processing to document agreed bail terms and restrictions.",
+      search_seizure: "Documents the legal authority and findings of a person or premises search."
+    };
+
+    function updateReportTypeHint() {
+      const hintDiv = document.getElementById("reportTypeHint");
+      const hintText = document.getElementById("reportTypeHintText");
+      if (!hintDiv || !hintText) return;
+      const msg = REPORT_TYPE_HINTS[state.reportType];
+      hintText.textContent = msg || "";
+      hintDiv.style.display = msg ? "" : "none";
+    }
+
     if (el.reportType) {
       el.reportType.addEventListener("change", () => {
         state.reportType = sanitizeVicPolReportType(el.reportType.value);
@@ -73,9 +89,11 @@
           localStorage.setItem("vicpol_report_last_report_type", state.reportType);
         } catch {}
         updateReportTypeUI();
+        updateReportTypeHint();
         debouncedRenderPreview();
         throttledAutosave();
       });
+      updateReportTypeHint();
     }
 
     // Header fields
@@ -381,6 +399,7 @@
       if (el[field]) {
         el[field].addEventListener("input", () => {
           state[field] = el[field].value;
+          if (field === 'summary') updateSummaryWordCount();
           debouncedRenderPreview();
           throttledAutosave();
         });
@@ -3260,7 +3279,7 @@
   }
 
   // ==========================================================================
-  // CHARACTER COUNT
+  // CHARACTER COUNT + WORD COUNT + VALIDATE BADGE
   // ==========================================================================
   function updateCharCount() {
     const cc = document.getElementById("charCount");
@@ -3269,6 +3288,32 @@
       cc.textContent = len.toLocaleString() + " chars";
     }
     updateSectionCopyBar();
+    updateSummaryWordCount();
+    updateValidateBadge();
+  }
+
+  function updateSummaryWordCount() {
+    const wc = document.getElementById("summaryWordCount");
+    if (!wc) return;
+    const words = (state.summary || "").trim().split(/\s+/).filter(Boolean).length;
+    if (words === 0) { wc.textContent = ""; return; }
+    wc.textContent = words + " words";
+    wc.style.color = words < 50 ? "rgba(255,80,80,0.85)" : words < 100 ? "var(--warn)" : "var(--muted)";
+  }
+
+  function updateValidateBadge() {
+    const btn = el.validateBtn;
+    const copyBtn = document.getElementById("copyBtn");
+    const count = validateDraft().length;
+    if (btn) {
+      btn.textContent = count > 0 ? "Validate (" + count + ")" : "Validate";
+      btn.style.borderColor = count > 0 ? "rgba(255,150,0,0.5)" : "";
+      btn.style.color = count > 0 ? "var(--warn)" : "";
+    }
+    if (copyBtn) {
+      copyBtn.style.borderColor = count > 0 ? "rgba(255,150,0,0.4)" : "";
+      copyBtn.title = count > 0 ? count + " issue(s) — validate before posting to MDT" : "";
+    }
   }
 
   // ==========================================================================

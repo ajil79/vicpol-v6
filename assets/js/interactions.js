@@ -438,6 +438,8 @@
         guidelinesBody.classList.toggle('open');
         const isOpen = guidelinesBody.classList.contains('open');
         guidelinesToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        const hintSpan = guidelinesToggle.querySelector('span[style]');
+        if (hintSpan) hintSpan.textContent = isOpen ? '— click to collapse' : '— click to expand';
       });
     }
 

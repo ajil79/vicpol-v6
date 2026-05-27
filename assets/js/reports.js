@@ -1,5 +1,16 @@
 /* Report builders, output generators, autosave/drafts, report-specific helpers. */
 
+  function addListLines(text, addFn) {
+    if (norm(text)) {
+      ensureLines(text).split("\n").forEach(x => {
+        const clean = x.trim();
+        if (clean) addFn(clean.startsWith('-') ? clean : `- ${clean}`);
+      });
+    } else {
+      addFn("- NIL");
+    }
+  }
+
   function buildPrelimLines() {
     const t = norm(state.prelimTime);
     const d = norm(state.prelimDate);
@@ -52,38 +63,17 @@
     if (!sectionExcluded("charges")) {
       const chargesNum = ++dn;
       add(`(${chargesNum}) List of Charges:`);
-      if (norm(state.chargesList)) {
-        ensureLines(state.chargesList).split("\n").forEach(x => {
-          const clean = x.trim();
-          if (clean) add(clean.startsWith('-') ? clean : `- ${clean}`);
-        });
-      } else {
-        add("- NIL");
-      }
+      addListLines(state.chargesList, add);
       add("");
-    
+
       if (!sectionExcluded("pins")) {
         add(`(${chargesNum}.1) PINs:`);
-        if (norm(state.pinsList)) {
-          ensureLines(state.pinsList).split("\n").forEach(x => {
-            const clean = x.trim();
-            if (clean) add(clean.startsWith('-') ? clean : `- ${clean}`);
-          });
-        } else {
-          add("- NIL");
-        }
+        addListLines(state.pinsList, add);
         add("");
       }
     } else if (!sectionExcluded("pins")) {
       add(`(${++dn}) PINs:`);
-      if (norm(state.pinsList)) {
-        ensureLines(state.pinsList).split("\n").forEach(x => {
-          const clean = x.trim();
-          if (clean) add(clean.startsWith('-') ? clean : `- ${clean}`);
-        });
-      } else {
-        add("- NIL");
-      }
+      addListLines(state.pinsList, add);
       add("");
     }
     
@@ -270,30 +260,16 @@
       add(`PH: ${s(state.offender.phone) || "NIL"}`);
       add("");
     }
-    
+
     if (!sectionExcluded("charges")) {
       add(`(${++dn}) List of Charges:`);
-      if (norm(state.chargesList)) {
-        ensureLines(state.chargesList).split("\n").forEach(x => {
-          const clean = x.trim();
-          if (clean) add(clean.startsWith('-') ? clean : `- ${clean}`);
-        });
-      } else {
-        add("- NIL");
-      }
+      addListLines(state.chargesList, add);
       add("");
     }
-    
+
     if (!sectionExcluded("pins")) {
       add(`(${++dn}) PINs:`);
-      if (norm(state.pinsList)) {
-        ensureLines(state.pinsList).split("\n").forEach(x => {
-          const clean = x.trim();
-          if (clean) add(clean.startsWith('-') ? clean : `- ${clean}`);
-        });
-      } else {
-        add("- NIL");
-      }
+      addListLines(state.pinsList, add);
       add("");
     }
     
@@ -425,33 +401,19 @@
       add(`PH: ${s(state.offender.phone) || "NIL"}`);
       add("");
     }
-    
+
     if (!sectionExcluded("charges")) {
       add(`(${++dn}) List of Charges:`);
-      if (norm(state.chargesList)) {
-        ensureLines(state.chargesList).split("\n").forEach(x => {
-          const clean = x.trim();
-          if (clean) add(clean.startsWith('-') ? clean : `- ${clean}`);
-        });
-      } else {
-        add("- NIL");
-      }
+      addListLines(state.chargesList, add);
       add("");
     }
-    
+
     if (!sectionExcluded("pins")) {
       add(`(${++dn}) PINs:`);
-      if (norm(state.pinsList)) {
-        ensureLines(state.pinsList).split("\n").forEach(x => {
-          const clean = x.trim();
-          if (clean) add(clean.startsWith('-') ? clean : `- ${clean}`);
-        });
-      } else {
-        add("- NIL");
-      }
+      addListLines(state.pinsList, add);
       add("");
     }
-    
+
     if (!sectionExcluded("items")) {
       add(`(${++dn}) Confiscated Items:`);
       const citems = lines(state.itemsList);
@@ -462,7 +424,7 @@
       }
       add("");
     }
-    
+
     if (!sectionExcluded("officers")) {
       add(`(${++dn}) Officers Involved:`);
       const off = lines(state.officersList);
@@ -473,7 +435,7 @@
       }
       add("");
     }
-    
+
     if (!sectionExcluded("sentence")) {
       add(`(${++dn}) Sentence:`);
       if (norm(state.sentence)) {
@@ -483,7 +445,7 @@
       }
       add("");
     }
-    
+
     let rn = 0; // dynamic numbering for REPORT section
     if (!sectionExcluded("narrative")) {
       add("REPORT:");
@@ -586,24 +548,10 @@
     add(`(2) Date and Time of interaction: ${s(bc.date) || "NIL"} ${s(bc.time) || "NIL"}`);
     add("");
     add("(3) List of Charges:");
-    if (norm(state.chargesList)) {
-      ensureLines(state.chargesList).split("\n").forEach(x => {
-        const clean = x.trim();
-        if (clean) add(clean.startsWith('-') ? clean : `- ${clean}`);
-      });
-    } else {
-      add("- NIL");
-    }
+    addListLines(state.chargesList, add);
     add("");
     add("(4) PINs (Penalty Infringement Notices):");
-    if (norm(state.pinsList)) {
-      ensureLines(state.pinsList).split("\n").forEach(x => {
-        const clean = x.trim();
-        if (clean) add(`- ${clean}`);
-      });
-    } else {
-      add("- NIL");
-    }
+    addListLines(state.pinsList, add);
     add("");
     buildDefectsOutputLines().forEach(x => add(x));
     add("Signed,");
@@ -710,10 +658,7 @@
 
     if (norm(state.chargesList)) {
       add("CHARGES LAID:");
-      ensureLines(state.chargesList).split("\n").forEach(x => {
-        const clean = x.trim();
-        if (clean) add(clean.startsWith('-') ? clean : `- ${clean}`);
-      });
+      addListLines(state.chargesList, add);
       add("");
     }
 
@@ -855,38 +800,17 @@
     if (!sectionExcluded("charges")) {
       const chargesNum = ++dn;
       add(`(${chargesNum}) List of Charges:`);
-      if (norm(state.chargesList)) {
-        ensureLines(state.chargesList).split("\n").forEach(x => {
-          const clean = x.trim();
-          if (clean) add(clean.startsWith('-') ? clean : `- ${clean}`);
-        });
-      } else {
-        add("- NIL");
-      }
+      addListLines(state.chargesList, add);
       add("");
-    
+
       if (!sectionExcluded("pins")) {
         add(`(${chargesNum}.1) PINs:`);
-        if (norm(state.pinsList)) {
-          ensureLines(state.pinsList).split("\n").forEach(x => {
-            const clean = x.trim();
-            if (clean) add(clean.startsWith('-') ? clean : `- ${clean}`);
-          });
-        } else {
-          add("- NIL");
-        }
+        addListLines(state.pinsList, add);
         add("");
       }
     } else if (!sectionExcluded("pins")) {
       add(`(${++dn}) PINs:`);
-      if (norm(state.pinsList)) {
-        ensureLines(state.pinsList).split("\n").forEach(x => {
-          const clean = x.trim();
-          if (clean) add(clean.startsWith('-') ? clean : `- ${clean}`);
-        });
-      } else {
-        add("- NIL");
-      }
+      addListLines(state.pinsList, add);
       add("");
     }
     
@@ -1348,6 +1272,7 @@
   }
   function getDefaultInterviewQuestions() {
     const type = state.reportType;
+    const charges = Array.from(selectedChargesSet).join(" ").toLowerCase();
 
     if (type === "traffic_warrant") {
       return `Can you confirm your full name and date of birth?
@@ -1358,6 +1283,37 @@ Were you aware of the road rules or restrictions applying at the time?
 Do you wish to nominate another person as the driver if you were not driving?
 Do you wish to contact a lawyer before answering further questions?
 Is there anything you would like to say regarding the offence?`;
+    }
+
+    if (/murder|manslaughter|shots?\s*fired|discharge/i.test(charges)) {
+      return `Can you confirm your full name and date of birth?
+Where were you at the above listed date and time?
+What were you doing at the above listed date and time?
+Can you explain why your fingerprints were found on hot bullet casings at the scene?
+Do you have anyone that can back up your story?
+Do you wish to contact a lawyer before answering further questions?
+Is there anything you would like to say regarding the charges?`;
+    }
+
+    if (/arson/i.test(charges)) {
+      return `Can you confirm your full name and date of birth?
+Where were you at the above listed date and time?
+What were you doing at the above listed date and time?
+Why was your DNA found at the scene of a fire?
+Do you have anyone that can back up your alibi?
+Do you wish to contact a lawyer before answering further questions?
+Is there anything you would like to say regarding the charges?`;
+    }
+
+    if (/evade|pursuit|fail.*stop/i.test(charges)) {
+      return `Can you confirm your full name and date of birth?
+Where were you at the above listed date and time?
+What were you doing at the above listed date and time?
+Why was your vehicle not reported as stolen?
+Who was last driving your vehicle?
+Do you have anyone that can back up your alibi?
+Do you wish to contact a lawyer before answering further questions?
+Is there anything you would like to say regarding the charges?`;
     }
 
     return `Can you confirm your full name and date of birth?
