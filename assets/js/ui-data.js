@@ -2103,7 +2103,7 @@
 
   // Default officer roster from VicPol May 2026 Hours
   const DEFAULT_OFFICERS = [
-    // Leadership Team (26)
+    // Leadership Team (27)
     {name:"Aaron McCrann",           rank:"",    division:"Leadership"},
     {name:"Alexander Hale",          rank:"",    division:"Leadership"},
     {name:"Alicia Draykos",          rank:"",    division:"Leadership"},
@@ -2113,6 +2113,7 @@
     {name:"Brad Bentley",            rank:"",    division:"Leadership"},
     {name:"Bruce D-Shark",           rank:"",    division:"Leadership"},
     {name:"Daniel Squelch-Ashburn",  rank:"",    division:"Leadership"},
+    {name:"Ford Robinson",           rank:"SGT", division:"Leadership"},
     {name:"Frank Sanchez",           rank:"",    division:"Leadership"},
     {name:"Harvey Decker",           rank:"",    division:"Leadership"},
     {name:"Hayley O'Riley",          rank:"",    division:"Leadership"},
