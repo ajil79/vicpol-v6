@@ -2082,7 +2082,7 @@
     const s = (line || "").trim();
     if (!s) return null;
     // Patterns: "MEL 228 | SC Smith", "MEL 228 | SC Smith | Ops", "POR440 SC Jones", "MEL 228"
-    const m = s.match(/^([A-Z]{2,5}\s*\d{1,4})\s*(?:\||\s)\s*(?:(A\/SGT|A\/INSP|A\/SUPT|SGT|S\/SGT|INSP|SUPT|CHIEF|REC|RECRUIT|PROB|PO|CST|CONST|SC|S\/C|LSC|FC|FST)\b\.?\s+)?(.+?)$/i);
+    const m = s.match(/^([A-Z]{2,5}\s*\d{1,4})\s*(?:\||\s)\s*(?:(A\/SGT|A\/INSP|A\/SUPT|SGT|S\/SGT|INSP|SUPT|CHIEF|REC|RECRUIT|PROB|PO|CST|CONST|SPC|SC|S\/C|LSC|FC|FST)\b\.?\s+)?(.+?)$/i);
     if (m) {
       const callsign = m[1].trim().toUpperCase();
       const rank = (m[2] || "").trim().toUpperCase();
@@ -2141,20 +2141,20 @@
     {name:"Sergeant Burton",         rank:"SGT", division:"Leadership"},
     {name:"Zoe Prime",               rank:"",    division:"Leadership"},
     // Special Constables (14)
-    {name:"Adrian Benedict",         rank:"SC",  division:"Special Constable"},
-    {name:"Alfred Pier",             rank:"SC",  division:"Special Constable"},
-    {name:"Anya Burton",             rank:"SC",  division:"Special Constable"},
-    {name:"Bobby Sinclair",          rank:"SC",  division:"Special Constable"},
-    {name:"Bragi Luciano-Cow",       rank:"SC",  division:"Special Constable"},
-    {name:"Hercules Draykos",        rank:"SC",  division:"Special Constable"},
-    {name:"Jake Jay-Ashburn",        rank:"SC",  division:"Special Constable"},
-    {name:"James Kade",              rank:"SC",  division:"Special Constable"},
-    {name:"Michael West",            rank:"SC",  division:"Special Constable"},
-    {name:"Ross Owans",              rank:"SC",  division:"Special Constable"},
-    {name:"Steven Evans",            rank:"SC",  division:"Special Constable"},
-    {name:"Titus Jorgan",            rank:"SC",  division:"Special Constable"},
-    {name:"Wiggy Donovan",           rank:"SC",  division:"Special Constable"},
-    {name:"Zelda Panchak",           rank:"SC",  division:"Special Constable"},
+    {name:"Adrian Benedict",         rank:"SPC", division:"Special Constable"},
+    {name:"Alfred Pier",             rank:"SPC", division:"Special Constable"},
+    {name:"Anya Burton",             rank:"SPC", division:"Special Constable"},
+    {name:"Bobby Sinclair",          rank:"SPC", division:"Special Constable"},
+    {name:"Bragi Luciano-Cow",       rank:"SPC", division:"Special Constable"},
+    {name:"Hercules Draykos",        rank:"SPC", division:"Special Constable"},
+    {name:"Jake Jay-Ashburn",        rank:"SPC", division:"Special Constable"},
+    {name:"James Kade",              rank:"SPC", division:"Special Constable"},
+    {name:"Michael West",            rank:"SPC", division:"Special Constable"},
+    {name:"Ross Owans",              rank:"SPC", division:"Special Constable"},
+    {name:"Steven Evans",            rank:"SPC", division:"Special Constable"},
+    {name:"Titus Jorgan",            rank:"SPC", division:"Special Constable"},
+    {name:"Wiggy Donovan",           rank:"SPC", division:"Special Constable"},
+    {name:"Zelda Panchak",           rank:"SPC", division:"Special Constable"},
     // Victoria Police Officers (65)
     {name:"Aaron Ford",              rank:"",    division:"Victoria Police"},
     {name:"Aaron Hudson",            rank:"",    division:"Victoria Police"},
@@ -2244,6 +2244,26 @@
       saveOfficersDB(merged);
     }
   }
+
+  // One-time, idempotent migration: existing "Special Constable" division officers
+  // were seeded with rank "SC" (Senior Constable). Re-badge them to "SPC".
+  // Uses a plain string check (no ladder helpers) because this runs at load time
+  // before the rank-ladder consts are initialised.
+  function migrateSpecialConstableRanks() {
+    const arr = loadOfficersDB();
+    let changed = false;
+    const updated = arr.map(o => {
+      const isSpecial = norm(o.division).toUpperCase() === "SPECIAL CONSTABLE"
+        || (o.divisions || []).some(d => norm(d).toUpperCase() === "SPECIAL CONSTABLE");
+      if (isSpecial && norm(o.rank).toUpperCase() === "SC") {
+        changed = true;
+        return { ...o, rank: "SPC", full: ["SPC", o.name].filter(Boolean).join(" ") || o.full };
+      }
+      return o;
+    });
+    if (changed) saveOfficersDB(updated);
+  }
+  migrateSpecialConstableRanks();
   seedOfficersDB();
 
   function upsertOfficer(officer) {
@@ -3046,6 +3066,7 @@
   // Ordered from junior (index 0) to senior. Each rank carries the
   // abbreviation written into officer lines and the full name shown in the UI.
   const VICPOL_RANK_LADDER = [
+    { abbr: "SPC",   name: "Special Constable" },
     { abbr: "REC",   name: "Recruit" },
     { abbr: "PROB",  name: "Probationary Constable" },
     { abbr: "CST",   name: "Constable" },
