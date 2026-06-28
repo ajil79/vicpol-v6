@@ -1511,6 +1511,10 @@ function enforceVicpolWarrantIdStatus(showToast = false) {
     officerText: document.getElementById("officerText"),
     addOfficerBtn: document.getElementById("addOfficerBtn"),
     officersList: document.getElementById("officersList"),
+    vpOfficerCallsign: document.getElementById("vpOfficerCallsign"),
+    vpOfficerRank: document.getElementById("vpOfficerRank"),
+    vpOfficerName: document.getElementById("vpOfficerName"),
+    vpAddOfficerBtn: document.getElementById("vpAddOfficerBtn"),
     newCallsignInput: document.getElementById("newCallsignInput"),
     addCallsignBtn: document.getElementById("addCallsignBtn"),
     

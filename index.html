@@ -465,14 +465,26 @@ Date        P?    Amount        Offence
 <button class="btn" id="manageSavedOfficersBtn" style="font-size:11px;padding:6px 10px" title="View and manage saved officers">👮 Saved</button>
 </div>
 </div>
+<!-- Structured VICPOL officer entry (callsign + rank + name) -->
+<div style="border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;background:rgba(0,0,0,0.12)">
+<div style="font-weight:800;color:var(--accent);font-size:13px;margin-bottom:8px">VICPOL officer</div>
+<div style="display:grid;grid-template-columns:150px 1fr;gap:10px;align-items:end">
+<label><div class="lbl">Callsign</div><input autocomplete="off" id="vpOfficerCallsign" placeholder="POR 431"/></label>
+<label><div class="lbl">Rank</div><select id="vpOfficerRank"><option value="">Rank…</option></select></label>
+</div>
+<div style="display:grid;grid-template-columns:1fr 110px;gap:10px;align-items:end;margin-top:10px">
+<label><div class="lbl">Name</div><input autocomplete="off" id="vpOfficerName" placeholder="Joseph O'Connelley"/></label>
+<button class="btn" id="vpAddOfficerBtn" style="margin-top:0">+ Add</button>
+</div>
+</div>
 <div style="display:grid; grid-template-columns:1fr 110px; gap:10px; align-items:start; position:relative">
 <div class="ac-wrap" style="position:relative">
-<input aria-autocomplete="list" aria-controls="acOfficer" aria-expanded="false" autocomplete="off" id="officerText" placeholder="Start typing callsign or name..." role="combobox"/>
+<input aria-autocomplete="list" aria-controls="acOfficer" aria-expanded="false" autocomplete="off" id="officerText" placeholder="Or type a full line: callsign + name..." role="combobox"/>
 <div class="ac-drop" id="acOfficer" role="listbox" style="display:none"></div>
 </div>
 <button class="btn" id="addOfficerBtn" style="margin-top:0">Add</button>
 </div>
-<div class="hint"><span>💡</span><span>Format: <strong>POR 431 SC Joseph O'Connelley</strong> or <strong>MEL 228 | Chris Gray</strong> — callsign auto-saved</span></div>
+<div class="hint"><span>💡</span><span>Or type a full line: <strong>POR 431 SC Joseph O'Connelley</strong> or <strong>MEL 228 | Chris Gray</strong> — callsign auto-saved</span></div>
 <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;align-items:center">
 <span style="font-size:11px;color:var(--muted);align-self:center;flex-shrink:0">Quick add:</span>
 <button class="btn quick-officer" data-officer="Other officers on shift" style="font-size:11px;padding:3px 9px" type="button">+ Other officers on shift</button>

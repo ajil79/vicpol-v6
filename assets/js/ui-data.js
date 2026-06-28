@@ -632,6 +632,15 @@
       });
     }
 
+    // Structured VICPOL officer form (Callsign + Rank select + Name)
+    populateRankDropdown();
+    if (el.vpAddOfficerBtn) el.vpAddOfficerBtn.addEventListener("click", addStructuredOfficer);
+    [el.vpOfficerCallsign, el.vpOfficerName].forEach(inp => {
+      if (inp) inp.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") { e.preventDefault(); addStructuredOfficer(); }
+      });
+    });
+
     // Quick-officer buttons (e.g. "Other officers on shift")
     document.querySelectorAll('.quick-officer').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -2272,6 +2281,35 @@
     updateOfficersBadge();
   }
 
+  // Add an officer from the structured form (Callsign + Rank select + Name).
+  // Composes the standard "CALLSIGN | ABBR Name" line and reuses the existing pipeline.
+  function addStructuredOfficer() {
+    if (!el.officersList) return;
+    const callsign = norm(el.vpOfficerCallsign?.value).toUpperCase();
+    const abbr = canonicalRankAbbr(el.vpOfficerRank?.value); // select value is the rank abbr
+    const name = norm(el.vpOfficerName?.value);
+    if (!name && !callsign) { toast("Enter a name (or at least a callsign)", "warn"); return; }
+    const rankAndName = [abbr, name].filter(Boolean).join(" ");
+    const line = (callsign && rankAndName) ? (callsign + " | " + rankAndName) : (callsign || rankAndName);
+    const existing = (el.officersList.value || "").split("\n").map(l => l.trim().toUpperCase());
+    if (existing.includes(line.toUpperCase())) {
+      toast("Officer already added", "warn");
+      return;
+    }
+    const current = (el.officersList.value || "").trimEnd();
+    el.officersList.value = current ? current + "\n" + line : line;
+    state.officersList = el.officersList.value;
+    upsertOfficer({ full: line, callsign, rank: abbr, name });
+    if (callsign) { addCallsignToPool(callsign); rememberRecentCallsign(callsign); }
+    if (el.vpOfficerCallsign) el.vpOfficerCallsign.value = "";
+    if (el.vpOfficerRank) el.vpOfficerRank.value = "";
+    if (el.vpOfficerName) el.vpOfficerName.value = "";
+    (el.vpOfficerCallsign || el.vpOfficerName)?.focus();
+    renderOfficerTags();
+    debouncedRenderPreview();
+    throttledAutosave();
+  }
+
   function deleteOfficer(fullKey) {
     if (!fullKey) return;
     const arr = loadOfficersDB();
@@ -2695,8 +2733,15 @@
       return;
     }
 
+    // Order by seniority (Superintendent → Recruit), unranked last, then by name.
+    const sorted = filtered.slice().sort((a, b) => {
+      const diff = rankOrderIndex(b.rank) - rankOrderIndex(a.rank);
+      if (diff !== 0) return diff;
+      return (a.name || a.full || "").localeCompare(b.name || b.full || "");
+    });
+
     container.innerHTML = "";
-    filtered.forEach(o => {
+    sorted.forEach(o => {
       const row = document.createElement("div");
       row.style.cssText = "display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start;padding:10px;background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:8px";
 
@@ -2705,6 +2750,34 @@
       const divisionList = dedupeKeepCase([...(o.divisions || []), o.division]);
       info.innerHTML = '<div style="font-size:12px;font-weight:800">' + escapeHtml(displayName || o.full) + '</div>'
         + (divisionList.length ? '<div style="font-size:11px;color:var(--muted);margin-top:4px">' + escapeHtml(divisionList.join(' • ')) + '</div>' : '');
+
+      // Rank badge + inline rank editor
+      const rankFull = rankAbbrToName(o.rank);
+      const rankRow = document.createElement("div");
+      rankRow.style.cssText = "display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap";
+      const rankBadge = document.createElement("span");
+      rankBadge.style.cssText = "display:inline-flex;align-items:center;padding:3px 9px;border-radius:999px;font-size:10px;font-weight:900;letter-spacing:0.03em;text-transform:uppercase;border:1px solid "
+        + (rankFull ? "rgba(140,190,255,0.4)" : "rgba(255,255,255,0.15)") + ";background:"
+        + (rankFull ? "rgba(140,190,255,0.12)" : "rgba(255,255,255,0.04)") + ";color:"
+        + (rankFull ? "rgba(180,210,255,0.95)" : "var(--muted)");
+      rankBadge.textContent = rankFull || "Unranked";
+      rankRow.appendChild(rankBadge);
+      const rankSelect = document.createElement("select");
+      rankSelect.style.cssText = "font-size:11px;padding:3px 6px;width:auto;min-width:150px";
+      rankSelect.title = "Set rank for " + displayName;
+      rankSelect.innerHTML = '<option value="">Set rank…</option>'
+        + VICPOL_RANK_LADDER.map(r => '<option value="' + r.abbr + '"' + (canonicalRankAbbr(o.rank) === r.abbr ? ' selected' : '') + '>' + escapeHtml(r.name) + '</option>').join("");
+      rankSelect.addEventListener("change", () => {
+        const newAbbr = canonicalRankAbbr(rankSelect.value);
+        updateOfficerRecord(o.full, existing => ({
+          ...existing,
+          rank: newAbbr,
+          full: [newAbbr, existing.name].filter(Boolean).join(' ') || existing.full
+        }));
+        toast(newAbbr ? ('Rank → ' + rankAbbrToName(newAbbr) + ' for ' + displayName) : ('Rank cleared for ' + displayName), 'ok');
+      });
+      rankRow.appendChild(rankSelect);
+      info.appendChild(rankRow);
 
       const callsignWrap = document.createElement("div");
       callsignWrap.style.cssText = "display:flex;flex-wrap:wrap;gap:6px;margin-top:8px";
@@ -2969,11 +3042,59 @@
     } catch(e) { return null; }
   }
 
-  // ── Signature pools (separate from officers) ─────────────────────────
-  const VICPOL_RANKS = [
-    "Recruit","Probationary Constable","Constable","First Constable","Senior Constable","Leading Senior Constable",
-    "Sergeant","Senior Sergeant","Inspector","Superintendent"
+  // ── VicPol rank hierarchy (single source of truth) ───────────────────
+  // Ordered from junior (index 0) to senior. Each rank carries the
+  // abbreviation written into officer lines and the full name shown in the UI.
+  const VICPOL_RANK_LADDER = [
+    { abbr: "REC",   name: "Recruit" },
+    { abbr: "PROB",  name: "Probationary Constable" },
+    { abbr: "CST",   name: "Constable" },
+    { abbr: "FC",    name: "First Constable" },
+    { abbr: "SC",    name: "Senior Constable" },
+    { abbr: "LSC",   name: "Leading Senior Constable" },
+    { abbr: "SGT",   name: "Sergeant" },
+    { abbr: "S/SGT", name: "Senior Sergeant" },
+    { abbr: "INSP",  name: "Inspector" },
+    { abbr: "SUPT",  name: "Superintendent" }
   ];
+  // Common abbreviation variants → canonical ladder abbr (acting ranks fold to base).
+  const RANK_ABBR_ALIASES = { "CONST": "CST", "S/C": "SC", "RECRUIT": "REC", "A/SGT": "SGT", "A/INSP": "INSP", "A/SUPT": "SUPT" };
+  function canonicalRankAbbr(raw) {
+    const up = norm(raw).toUpperCase();
+    if (!up) return "";
+    return RANK_ABBR_ALIASES[up] || up;
+  }
+  function rankAbbrToName(abbr) {
+    const canon = canonicalRankAbbr(abbr);
+    const hit = VICPOL_RANK_LADDER.find(r => r.abbr === canon);
+    return hit ? hit.name : "";
+  }
+  function rankNameToAbbr(name) {
+    const clean = norm(name);
+    if (!clean) return "";
+    const hit = VICPOL_RANK_LADDER.find(r => r.name.toUpperCase() === clean.toUpperCase());
+    return hit ? hit.abbr : canonicalRankAbbr(clean);
+  }
+  // Seniority index for sorting (senior = higher). Unknown/blank → -1 (sorts last).
+  function rankOrderIndex(rankAbbrOrName) {
+    const clean = norm(rankAbbrOrName);
+    if (!clean) return -1;
+    const byName = VICPOL_RANK_LADDER.findIndex(r => r.name.toUpperCase() === clean.toUpperCase());
+    if (byName >= 0) return byName;
+    const canon = canonicalRankAbbr(clean);
+    return VICPOL_RANK_LADDER.findIndex(r => r.abbr === canon);
+  }
+  // Fill the structured-form rank <select> with full names (value = abbr).
+  function populateRankDropdown() {
+    const sel = document.getElementById("vpOfficerRank");
+    if (!sel || sel.dataset.filled === "1") return;
+    sel.innerHTML = '<option value="">Rank…</option>' +
+      VICPOL_RANK_LADDER.map(r => '<option value="' + r.abbr + '">' + escapeHtml(r.name) + '</option>').join("");
+    sel.dataset.filled = "1";
+  }
+
+  // ── Signature pools (separate from officers) ─────────────────────────
+  const VICPOL_RANKS = VICPOL_RANK_LADDER.map(r => r.name);
   const ALL_RANKS = [...VICPOL_RANKS];
   const SIG_PROFILES_KEY = "vicpol_report_signature_profiles";
   const SIG_RANKS_KEY = "vicpol_report_signature_ranks_pool";
