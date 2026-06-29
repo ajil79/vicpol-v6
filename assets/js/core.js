@@ -1110,6 +1110,9 @@ function enforceVicpolWarrantIdStatus(showToast = false) {
     } else if (currentPage === 'ocr') {
       if (badge) { badge.textContent = 'OCR INTAKE'; badge.dataset.context = 'ocr'; }
       if (subtitle) subtitle.textContent = `${APP_META.fullName} - ${APP_META.ocrSubtitle}`;
+    } else if (currentPage === 'recruit') {
+      if (badge) { badge.textContent = 'RECRUIT HELPER'; badge.dataset.context = 'recruit'; }
+      if (subtitle) subtitle.textContent = `${APP_META.fullName} - Recruit Helper & Handbook`;
     } else {
       if (badge) {
         badge.textContent = 'TRAFFIC HISTORY';

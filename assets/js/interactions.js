@@ -359,6 +359,7 @@
   setupOfficerAutocomplete();
   setupSignatureAutocomplete();
   initSectionClearButtons();
+  if (typeof initRecruitHelper === 'function') initRecruitHelper();
   initChargeFilters();
   renderChargeList();
   renderPinList();
@@ -398,7 +399,7 @@
 
   
   function showToolPage(page) {
-    const allowedPages = new Set(['report', 'traffic', 'ocr']);
+    const allowedPages = new Set(['report', 'traffic', 'ocr', 'recruit']);
     const target = allowedPages.has(page) ? page : 'report';
     document.querySelectorAll('.tool-page').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.tool-nav button').forEach(b => { b.classList.remove('nav-active'); b.setAttribute('aria-selected', 'false'); });
@@ -406,7 +407,8 @@
     const pageMap = {
       report: { panel: 'reportPage', tab: 'tab-report' },
       traffic: { panel: 'trafficPage', tab: 'tab-traffic' },
-      ocr: { panel: 'ocrPage', tab: 'tab-ocr' }
+      ocr: { panel: 'ocrPage', tab: 'tab-ocr' },
+      recruit: { panel: 'recruitPage', tab: 'tab-recruit' }
     };
 
     const cfg = pageMap[target] || pageMap.report;

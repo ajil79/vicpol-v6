@@ -38,6 +38,7 @@
 <button aria-controls="reportPage" aria-selected="true" class="nav-active" data-tool-page="report" id="tab-report" role="tab">Report Tool</button>
 <button aria-controls="trafficPage" aria-selected="false" data-tool-page="traffic" id="tab-traffic" role="tab">Traffic History</button>
 <button aria-controls="ocrPage" aria-label="OCR Intake" aria-selected="false" data-tool-page="ocr" id="tab-ocr" role="tab">📷 OCR Intake</button>
+<button aria-controls="recruitPage" aria-selected="false" data-tool-page="recruit" id="tab-recruit" role="tab">🎓 Recruit Helper</button>
 </nav>
 <!-- REPORT TOOL PAGE -->
 <div aria-labelledby="tab-report" class="tool-page active" id="reportPage" role="tabpanel">
@@ -932,6 +933,21 @@ Paramedic David Ace" rows="3"></textarea></label>
 </div>
 </div>
 
+<!-- RECRUIT HELPER PAGE -->
+<div aria-labelledby="tab-recruit" class="tool-page" id="recruitPage" role="tabpanel">
+<div class="rh-wrap">
+<div class="rh-head">🎓 Recruit Helper</div>
+<div class="rh-sub">Quick in-app reference from the BBRP General Duties Handbook (2025), Victoria Police Handbook (2024) &amp; Melbourne Police Help Guide (2025). Reference only — separate from report writing.</div>
+<div class="rh-controls">
+<input aria-label="Search recruit helper" autocomplete="off" id="rhSearch" placeholder="🔍 Search topics, e.g. code 9, callsign, FPO, use of force..." type="text"/>
+<button class="btn" id="rhExpandAll" style="font-size:11px;padding:6px 10px" type="button">Expand all</button>
+<button class="btn" id="rhCollapseAll" style="font-size:11px;padding:6px 10px" type="button">Collapse all</button>
+<button class="btn" id="rhClear" style="font-size:11px;padding:6px 10px" type="button">Clear</button>
+<span class="rh-count" id="rhCount"></span>
+</div>
+<div id="recruitSections"></div>
+</div>
+</div>
 <script src="assets/data/charges.js"></script>
 <script src="assets/data/pins.js"></script>
 <script src="assets/js/core.js"></script>
@@ -939,5 +955,7 @@ Paramedic David Ace" rows="3"></textarea></label>
 <script src="assets/data/items.js"></script>
 <script src="assets/js/ocr.js"></script>
 <script src="assets/js/ui-data.js"></script>
+<script src="assets/data/recruit.js"></script>
+<script src="assets/js/recruit-helper.js"></script>
 <script src="assets/js/interactions.js"></script></body>
 </html>
