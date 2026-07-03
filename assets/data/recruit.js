@@ -180,7 +180,11 @@ const RECRUIT_HANDBOOK = [
     keywords: "rbt rdt breath test drug test traffic offence dangerous driving code 4 mandatory alcohol",
     html:
       '<p>Traffic-based offences require a mandatory <strong>Random Breath Test (RBT)</strong> and <strong>Random Drug Test (RDT)</strong>. Dangerous driving is a common trigger.</p>' +
-      '<p>Incorporate the RBT/RDT into your Code 4 (traffic stop) flow before charging traffic offences.</p>'
+      '<p>Incorporate the RBT/RDT into your Code 4 (traffic stop) flow before charging traffic offences.</p>' +
+      '<p class="rh-note">Driver fled before you could test? See <button class="rh-jump-link" data-rh-jump="code4-flee" type="button">Fled Traffic Stop — Which Warrant?</button></p>' +
+      '<div class="rh-links"><span class="rh-links-label">Write it up:</span>' +
+      '<button class="rh-tool-link" data-rh-report="arrest" type="button">📝 Arrest Report — DUI / drug-driving charges</button>' +
+      '</div>'
   },
   {
     id: "impounds", group: "On Duty & Driving", icon: "🚙",
@@ -257,7 +261,6 @@ const RECRUIT_HANDBOOK = [
       '<p>PINs (Penalty Infringement Notices) are issued the same way via the Fine Options &rarr; Issue Fines flow.</p>' +
       '<div class="rh-links"><span class="rh-links-label">In the Report Tool:</span>' +
       '<button class="rh-tool-link" data-rh-report="arrest" type="button">📝 Arrest Report — charge &amp; PIN pickers</button>' +
-      '<button class="rh-tool-link" data-rh-report="bail_conditions" type="button">💰 Bail Conditions — auto-calculated bail</button>' +
       '</div>'
   },
   {
@@ -290,7 +293,10 @@ const RECRUIT_HANDBOOK = [
       '<tr><td>Tier 3</td><td>90 Days</td><td>SGT+</td><td>Thoroughly search the person, their vehicle &amp; any occupants.</td></tr>' +
       '<tr><td>Tier 4</td><td>Permanent</td><td>INSP+</td><td>Same as Tier 3.</td></tr>' +
       '</tbody></table>' +
-      '<p>FPOs may be issued for serious reasons (e.g. attempted murder of emergency services, mass murder). After issuing in-city, you <strong>must</strong> also log the request with the FPO BOT — this is as important as issuing the FPO itself.</p>'
+      '<p>FPOs may be issued for serious reasons (e.g. attempted murder of emergency services, mass murder). After issuing in-city, you <strong>must</strong> also log the request with the FPO BOT — this is as important as issuing the FPO itself.</p>' +
+      '<div class="rh-links"><span class="rh-links-label">Write it up:</span>' +
+      '<button class="rh-tool-link" data-rh-report="search_seizure" type="button">🔎 Search &amp; Seizure — FPO search powers</button>' +
+      '</div>'
   },
   {
     id: "drugs", group: "Procedures", icon: "💊",
@@ -303,7 +309,10 @@ const RECRUIT_HANDBOOK = [
       '<tr><td>Trafficking a Drug of Dependence</td><td>$3,500</td></tr>' +
       '<tr><td>Cultivation of Narcotic Plants</td><td>$1,500</td></tr>' +
       '</tbody></table>' +
-      '<p>Charge types include Cultivation, Manufacturing, Possession, Trafficking and Fraud (fake credit cards). Related legislation: <strong>Victorian Crimes Act 1958</strong> &amp; <strong>Victorian Police Act 2013</strong>.</p>'
+      '<p>Charge types include Cultivation, Manufacturing, Possession, Trafficking and Fraud (fake credit cards). Related legislation: <strong>Victorian Crimes Act 1958</strong> &amp; <strong>Victorian Police Act 2013</strong>.</p>' +
+      '<div class="rh-links"><span class="rh-links-label">Write it up:</span>' +
+      '<button class="rh-tool-link" data-rh-report="arrest" type="button">📝 Arrest Report — Drug charges &amp; NIK test evidence</button>' +
+      '</div>'
   },
   {
     id: "code4-flee", group: "Procedures", icon: "🏃",
@@ -351,7 +360,10 @@ const RECRUIT_HANDBOOK = [
       '<tr><td><strong>Additional Units</strong></td><td>Keep a secure perimeter · listen to directions · stand by for a possible breach.</td></tr>' +
       '<tr><td><strong>K9</strong></td><td>Sweep the area for possible suspects.</td></tr>' +
       '</tbody></table>' +
-      '<p class="rh-warn">Do not use doors/abilities to powergame your way into an active scene — wait for direction.</p>'
+      '<p class="rh-warn">Do not use doors/abilities to powergame your way into an active scene — wait for direction.</p>' +
+      '<div class="rh-links"><span class="rh-links-label">Write it up:</span>' +
+      '<button class="rh-tool-link" data-rh-report="arrest" type="button">📝 Arrest Report — scene, roles, victims &amp; timeline</button>' +
+      '</div>'
   },
   {
     id: "use-of-force", group: "Procedures", icon: "✊",
@@ -367,7 +379,10 @@ const RECRUIT_HANDBOOK = [
       '<li>Taze someone off a stationary/low-speed (&le;20 kph) motorcycle &mdash; <strong>yes</strong> (Less than Lethal +).</li>' +
       '<li>Taze/beanbag from a stationary/low-speed vehicle &mdash; <strong>yes</strong> (Less than Lethal +); RP breaking the window.</li>' +
       '<li>Lethal force on an occupant at speed (&gt;20 kph) &mdash; only if armed &amp; refusing orders, fleeing a violent crime, or using the vehicle as a weapon.</li>' +
-      '<li>Tactical contact with a motorcycle &mdash; only while they are actively firing at police.</li></ul>'
+      '<li>Tactical contact with a motorcycle &mdash; only while they are actively firing at police.</li></ul>' +
+      '<div class="rh-links"><span class="rh-links-label">Write it up:</span>' +
+      '<button class="rh-tool-link" data-rh-report="arrest" type="button">📝 Arrest Report — state the threat before the response</button>' +
+      '</div>'
   },
 
   /* ───────────── CONDUCT & CAREER ───────────── */

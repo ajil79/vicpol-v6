@@ -66,6 +66,7 @@
   function bindInputs() {
     // Report type
     const REPORT_TYPE_HINTS = {
+      arrest: "Standard post-arrest report — charges, PINs, items, narrative and sentence in one document.",
       vicpol_warrant: "Questioning warrant — use when identity is UNCONFIRMED. Suspect placed at scene by evidence (DNA, shells, CCTV) but not directly identified.",
       vicpol_arrest: "Arrest warrant — use when identity IS CONFIRMED beyond reasonable doubt (licence, MDT, fingerprints, verbal confirmation).",
       bail_conditions: "Use after processing to document agreed bail terms and restrictions.",
@@ -75,13 +76,30 @@
       vehicle_inspection: "MVS 2025 roadworthy checklist — mandatory items are instant defects; advisory items produce a fix-it notice."
     };
 
+    // Recruit Helper topic backing each report type (📖 button in the hint bar).
+    // vehicle_inspection and bail_conditions have no guide topic — button hidden.
+    const REPORT_TYPE_GUIDE_TOPICS = {
+      arrest: "arrest-caution",
+      vicpol_arrest: "code4-flee",
+      vicpol_warrant: "code4-flee",
+      traffic_warrant: "impounds",
+      field_contact: "warrants",
+      search_seizure: "search-seizure"
+    };
+
     function updateReportTypeHint() {
       const hintDiv = document.getElementById("reportTypeHint");
       const hintText = document.getElementById("reportTypeHintText");
       if (!hintDiv || !hintText) return;
       const msg = REPORT_TYPE_HINTS[state.reportType];
       hintText.textContent = msg || "";
-      hintDiv.style.display = msg ? "" : "none";
+      const guideBtn = document.getElementById("reportTypeGuideBtn");
+      const topic = REPORT_TYPE_GUIDE_TOPICS[state.reportType] || "";
+      if (guideBtn) {
+        guideBtn.dataset.guideTopic = topic;
+        guideBtn.style.display = topic ? "" : "none";
+      }
+      hintDiv.style.display = (msg || topic) ? "" : "none";
     }
 
     if (el.reportType) {

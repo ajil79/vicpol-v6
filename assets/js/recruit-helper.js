@@ -18,6 +18,10 @@
   function rhStripText(html) {
     var d = document.createElement("div");
     d.innerHTML = html || "";
+    // Shortcut pill labels ("Arrest Report", ...) must not pollute the search haystack,
+    // or every linked topic would match a search for "arrest".
+    var links = d.querySelectorAll(".rh-links");
+    for (var i = 0; i < links.length; i++) links[i].parentNode.removeChild(links[i]);
     return (d.textContent || d.innerText || "").replace(/\s+/g, " ");
   }
 
@@ -161,6 +165,31 @@
     }
     toggleSection(sec, true);
     sec.scrollIntoView({ behavior: "smooth", block: "start" });
+    // Flash the section so the reader sees where they landed
+    sec.classList.remove("rh-flash");
+    void sec.offsetWidth;
+    sec.classList.add("rh-flash");
+    sec.addEventListener("animationend", function () { sec.classList.remove("rh-flash"); }, { once: true });
+    setTimeout(function () { sec.classList.remove("rh-flash"); }, 1600);
+  }
+
+  // Entry point for "📖 guide" buttons elsewhere in the app ([data-guide-topic]):
+  // switch to the Recruit Helper page and open + scroll to the given topic.
+  function openRecruitTopic(id) {
+    if (!id) return;
+    initRecruitHelper();
+    if (typeof window.showToolPage === "function") window.showToolPage("recruit");
+    jumpToSection(id);
+  }
+
+  function bindGuideTopicLinks() {
+    if (document.body.dataset.guideTopicBound === "1") return;
+    document.body.dataset.guideTopicBound = "1";
+    document.addEventListener("click", function (e) {
+      var btn = e.target && e.target.closest ? e.target.closest("[data-guide-topic]") : null;
+      if (!btn || !btn.dataset.guideTopic) return;
+      openRecruitTopic(btn.dataset.guideTopic);
+    });
   }
 
   function bindShortcutLinks() {
@@ -188,6 +217,7 @@
     rendered = true;
     renderRecruitHelper();
     bindShortcutLinks();
+    bindGuideTopicLinks();
 
     var search = document.getElementById("rhSearch");
     if (search) search.addEventListener("input", function () { filterRecruit(search.value); });
@@ -209,5 +239,6 @@
     window.initRecruitHelper = initRecruitHelper;
     window.renderRecruitHelper = renderRecruitHelper;
     window.filterRecruit = filterRecruit;
+    window.openRecruitTopic = openRecruitTopic;
   }
 })();

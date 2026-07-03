@@ -57,7 +57,7 @@
 <option value="search_seizure">Search &amp; Seizure</option>
 <option value="vehicle_inspection">Vehicle Inspection</option>
 </select>
-<div id="reportTypeHint" class="hint" style="margin-top:6px;display:none"><span>💡</span><span id="reportTypeHintText"></span></div>
+<div id="reportTypeHint" class="hint" style="margin-top:6px;display:none"><span>💡</span><span id="reportTypeHintText"></span><button class="btn" data-guide-topic="" id="reportTypeGuideBtn" style="font-size:11px;padding:6px 10px;flex-shrink:0;margin-left:auto;display:none" type="button">📖 Guide</button></div>
 <div class="hint" style="margin-top:8px"><span>💡</span><span>Date/time, callsign and unit can still auto-fill from MDT paste or your saved template, but you can now edit them here as well.</span></div>
 <details class="header-meta-details" id="reportHeaderMetaDetails">
 <summary>Report header details</summary>
@@ -195,7 +195,7 @@
 <label><div class="lbl">Approved By</div><input id="twApprovedBy"/></label>
 </div>
 <div style="margin-top:8px;padding:10px;background:rgba(255,180,80,0.06);border:1px solid rgba(255,180,80,0.18);border-radius:10px">
-<div class="lbl" style="margin-bottom:6px">Impound Vehicle</div>
+<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px"><div class="lbl" style="margin-bottom:0">Impound Vehicle</div><button class="btn" data-guide-topic="impounds" style="font-size:11px;padding:6px 10px;flex-shrink:0" type="button">📖 Impound rules</button></div>
 <div class="grid2">
 <label><div class="lbl">Impound Offence #</div>
 <select id="twImpoundNum">
@@ -543,6 +543,10 @@ Date        P?    Amount        Offence
 <li><strong>Timeline</strong> — Key times throughout: arrival, pursuit start/end, apprehension, processing, sentencing.</li>
 <li><strong>Sentence approvals</strong> — Note approving officer inline: "Approved by SGT X" or "Self-Approved — SGT+". Include if lawyer negotiated a reduced sentence.</li>
 </ul>
+<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">
+<button class="btn" data-guide-topic="use-of-force" style="font-size:11px;padding:6px 10px" type="button">📖 Use of Force guide</button>
+<button class="btn" data-guide-topic="arrest-caution" style="font-size:11px;padding:6px 10px" type="button">📖 Arrest &amp; Caution guide</button>
+</div>
 </div>
 </div>
 </div>
@@ -617,6 +621,7 @@ or: At approximately [TIME] HRS on [DATE], [CALLSIGN] ([NAME]) was on patrol whe
 <div class="hint">
 <span>❓</span>
 <span>Questions for warrants, questioning, and post-arrest interviews — one per line. Used in all warrant types and arrest reports.</span>
+<button class="btn" data-guide-topic="arrest-caution" style="font-size:11px;padding:6px 10px;flex-shrink:0;margin-left:auto" type="button">📖 Caution &amp; rights</button>
 </div>
 <textarea id="interviewQs" placeholder="Enter interview questions, one per line" rows="8" style="margin-top:10px"></textarea>
 </div>
@@ -625,7 +630,7 @@ or: At approximately [TIME] HRS on [DATE], [CALLSIGN] ([NAME]) was on patrol whe
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><h2 style="margin:0">Sentence &amp; Evidence Locker</h2><button aria-expanded="true" aria-label="Toggle section visibility" class="section-toggle-btn" title="Toggle section in/out of report" type="button">👁</button></div>
 <div class="fields">
 <div>
-<div class="lbl" style="margin-bottom:8px">Sentence suggestion from selected charges</div>
+<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px"><div class="lbl" style="margin-bottom:0">Sentence suggestion from selected charges</div><button class="btn" data-guide-topic="sentencing" style="font-size:11px;padding:6px 10px;flex-shrink:0" type="button">📖 Sentencing caps</button></div>
 <div id="sentenceSuggestion" style="padding:12px;background:rgba(0,0,0,0.2);border:1px solid var(--border);border-radius:10px;margin-bottom:10px">
 <div id="sentenceSuggestionText" style="font-size:13px;color:var(--muted)">No charges selected</div>
 </div>
