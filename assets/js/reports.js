@@ -389,7 +389,7 @@
     const idStatus = s(sw.idStatus) || "UNCONFIRMED";
     const idLabel = idStatus === "CONFIRMED" ? "ID CONFIRMED" : "ID UNCONFIRMED";
     
-    add(`DATE: ${dt} - CRIMINAL WARRANT - Entered by: ${enteredBy}`);
+    add(`DATE: ${dt} - WARRANT FOR QUESTIONING - Entered by: ${enteredBy}`);
     add("WARRANT DETAILS:");
     add(`(${++dn}) Outstanding Warrant for ${who} (${idLabel} | REGO ${s(sw.rego) ? "CONFIRMED" : "NOT CONFIRMED"})`);
     if (!sectionExcluded("offender")) {
@@ -1169,6 +1169,8 @@
   // ============================================================================
   // Scans the narrative text for common quality indicators and returns
   // amber-level suggestions (not errors) to help recruits write court-ready reports.
+  // Each hint is { text, topic } — topic is an optional Recruit Helper section id
+  // rendered as a 📖 chip (data-guide-topic) next to the suggestion.
   function getQualityHints() {
     const hints = [];
     const type = state.reportType;
@@ -1178,28 +1180,28 @@
 
     // Only run quality hints on report types that have narratives
     if (!["arrest","vicpol_arrest","vicpol_warrant","traffic_warrant"].includes(type)) return hints;
-    
+
     // Don't nag if no summary written yet (missing summary is already a warning)
     if (!norm(state.summary)) return hints;
 
     // ── Universal checks (any arrest/warrant report) ──────────────────
-    
+
     // Identification method
     if (!/identif|licence|license|MDT|fingerprint|DNA|verbal.*confirm|photo.*ID|recognised|recognized/i.test(summary)) {
-      hints.push("Consider adding: how the suspect was identified (licence, MDT profile, fingerprints, verbal confirmation)");
+      hints.push({ text: "Consider adding: how the suspect was identified (licence, MDT profile, fingerprints, verbal confirmation)", topic: "arrest-caution" });
     }
 
     // Caution read
     if (["arrest","vicpol_arrest"].includes(type)) {
       if (!/caution|rights?\s*(were|was)?\s*read|miranda|informed.*rights|read.*rights|cautioned/i.test(summary)) {
-        hints.push("Consider adding: was caution read to the suspect? Did they acknowledge?");
+        hints.push({ text: "Consider adding: was caution read to the suspect? Did they acknowledge?", topic: "arrest-caution" });
       }
     }
 
     // Processing location
     if (["arrest","vicpol_arrest"].includes(type)) {
       if (!/process|station|VIN\s*900|MEL\s*900|FKN|bolingbroke|MRC|remand/i.test(summary)) {
-        hints.push("Consider adding: where was the suspect processed? (station name or code)");
+        hints.push({ text: "Consider adding: where was the suspect processed? (station name or code)", topic: "arrest-caution" });
       }
     }
 
@@ -1208,64 +1210,64 @@
     // Force charges → needs force justification
     if (/assault|injur|force|shoot|discharg|lethal|taser|baton|ois/i.test(charges)) {
       if (!/threat|produced.*weapon|aimed|lunged|attacked|swung|brandish|pointed|fired.*at|charged.*at/i.test(summary)) {
-        hints.push("Force charges selected — consider adding: what threat justified the force used (state the threat BEFORE the response)");
+        hints.push({ text: "Force charges selected — consider adding: what threat justified the force used (state the threat BEFORE the response)", topic: "use-of-force" });
       }
     }
 
     // Pursuit charges → needs pursuit details
     if (/evade|pursuit|fail.*stop/i.test(charges)) {
       if (!/pursuit.*end|boxed|spike|crash|broke.*off|abandon|voluntar|pulled.*over|came.*stop/i.test(summary)) {
-        hints.push("Pursuit charges selected — consider adding: how the pursuit ended");
+        hints.push({ text: "Pursuit charges selected — consider adding: how the pursuit ended", topic: "code4-flee" });
       }
       if (!/speed|km\/?h|mph|zone/i.test(summary)) {
-        hints.push("Pursuit charges selected — consider adding: speeds reached and speed zones");
+        hints.push({ text: "Pursuit charges selected — consider adding: speeds reached and speed zones", topic: "code4-flee" });
       }
     }
 
     // Weapon charges → needs weapon details
     if (/weapon|firearm|pistol|rifle|knife|prohibited.*weapon|carry.*weapon/i.test(charges)) {
       if (!/serial|S\/N|SN:|SER\.|weapon.*type|make.*model/i.test(summary) && !/serial|S\/N/i.test(state.itemsList || "")) {
-        hints.push("Weapon charges selected — consider adding: weapon type and serial number in narrative or confiscated items");
+        hints.push({ text: "Weapon charges selected — consider adding: weapon type and serial number in narrative or confiscated items", topic: "charges-pins" });
       }
     }
 
     // Drug charges → needs substance details
     if (/drug|narcotic|substance|possess.*controlled/i.test(charges)) {
       if (!/NIK|test.*positive|test.*negative|substance.*identif|gram|bag|quantity/i.test(allText)) {
-        hints.push("Drug charges selected — consider adding: substance type, quantity, and test result");
+        hints.push({ text: "Drug charges selected — consider adding: substance type, quantity, and test result", topic: "drugs" });
       }
     }
 
     // Murder/shooting → needs GSR and victim details
     if (/murder|manslaughter|discharge|shots?\s*fired/i.test(charges)) {
       if (!/GSR/i.test(allText)) {
-        hints.push("Shooting/discharge charges — consider adding: GSR test result for suspect");
+        hints.push({ text: "Shooting/discharge charges — consider adding: GSR test result for suspect", topic: "use-of-force" });
       }
       if (!/victim|deceased|injur.*party|ambulance|MAS|paramedic/i.test(summary)) {
-        hints.push("Shooting/discharge charges — consider adding: victim details and medical response");
+        hints.push({ text: "Shooting/discharge charges — consider adding: victim details and medical response", topic: "use-of-force" });
       }
     }
 
     // DUI/traffic → needs test results
     if (/DUI|drink.*driv|impair|intoxicat|alcohol/i.test(charges)) {
       if (!/breath|blood.*alcohol|BAC|PBT|roadside.*test|drug.*test|impairment.*assess/i.test(summary)) {
-        hints.push("Impaired driving charges — consider adding: breath/drug test result");
+        hints.push({ text: "Impaired driving charges — consider adding: breath/drug test result", topic: "rbt-rdt" });
       }
     }
 
     // Robbery/theft → needs victim and property
     if (/robbery|armed.*robbery|steal|theft|burgl/i.test(charges)) {
       if (!/victim|complainant|property.*stolen|taken|recover/i.test(summary)) {
-        hints.push("Robbery/theft charges — consider adding: victim details and property stolen/recovered");
+        hints.push({ text: "Robbery/theft charges — consider adding: victim details and property stolen/recovered", topic: "search-seizure" });
       }
     }
 
     // ── Word count check ──────────────────────────────────────────────
     const wordCount = (state.summary || "").trim().split(/\s+/).filter(Boolean).length;
     if (wordCount > 0 && wordCount < 50) {
-      hints.push("Narrative is very short (" + wordCount + " words) — most court-ready reports need 100+ words to cover all required details");
+      hints.push({ text: "Narrative is very short (" + wordCount + " words) — most court-ready reports need 100+ words to cover all required details", topic: "" });
     } else if (wordCount >= 50 && wordCount < 100) {
-      hints.push("Narrative is " + wordCount + " words — consider expanding with more detail for court readiness");
+      hints.push({ text: "Narrative is " + wordCount + " words — consider expanding with more detail for court readiness", topic: "" });
     }
 
     return hints;
@@ -1355,6 +1357,16 @@ Is there anything you would like to say regarding the charges?`;
     const text = (el.preview?.textContent || "").trim();
     const success = await copyToClipboard(text);
     toast(success ? "Copied to clipboard" : "Failed to copy", success ? "ok" : "err");
+    if (success) flashCopiedLabel(document.getElementById("copyBtn"));
+  }
+
+  // Briefly swap a button's label to confirm a successful copy.
+  function flashCopiedLabel(btn) {
+    if (!btn || btn.dataset.copiedFlash === "1") return;
+    btn.dataset.copiedFlash = "1";
+    const original = btn.innerHTML;
+    btn.innerHTML = "✓ Copied";
+    setTimeout(() => { btn.innerHTML = original; delete btn.dataset.copiedFlash; }, 1200);
   }
 
   async function copyToClipboard(text) {
@@ -1387,7 +1399,7 @@ Is there anything you would like to say regarding the charges?`;
 
   function extractOfficerName(line) {
     const s = (line || "").trim();
-    const re = /^\s*[,•\-\u2022]*\s*[A-Z0-9]{2,4}[\s\-]?\d{1,4}\s*(?:\|\s*)?(?:(A\/SGT|A\/INSP|A\/SUPT|SGT|S\/SGT|INSP|SUPT|CHIEF|RECRUIT|RCT|REC|PCON|PROB|PO|CST|CONST|CON|SC|S\/C|LSC|FC|FST)\b\.?\s*)?(.+?)\s*$/i;
+    const re = /^\s*[,•\-\u2022]*\s*[A-Z0-9]{2,4}[\s\-]?\d{1,4}\s*(?:\|\s*)?(?:(A\/SGT|A\/INSP|A\/SUPT|SGT|S\/SGT|INSP|SUPT|CHIEF|RECRUIT|RCT|REC|PCON|PROB|CST|CONST|CON|SPC|SC|S\/C|LSC|FC)\b\.?\s*)?(.+?)\s*$/i;
     const m = s.match(re);
     if (!m) return "";
     let name = (m[2] || "").trim();

@@ -376,6 +376,16 @@ function enforceVicpolWarrantIdStatus(showToast = false) {
     }
   }
 
+  // Handbook rule: max 3 charges and 3 PINs without VicPol leadership approval.
+  function updateApprovalWarn(warnId, count, noun) {
+    const warnEl = document.getElementById(warnId);
+    if (!warnEl) return;
+    const over = count > 3;
+    warnEl.style.display = over ? "flex" : "none";
+    const textEl = warnEl.querySelector("span");
+    if (over && textEl) textEl.textContent = "⚠ " + count + " " + noun + " selected — more than 3 requires VicPol leadership approval";
+  }
+
   function renderSelectedCharges() {
     if (!el.selectedCharges) return;
     el.selectedCharges.innerHTML = "";
@@ -383,6 +393,8 @@ function enforceVicpolWarrantIdStatus(showToast = false) {
     // Update count badge
     const countEl = document.getElementById("chargeCount");
     if (countEl) countEl.textContent = selectedChargesSet.size > 0 ? `(${selectedChargesSet.size} selected)` : "";
+
+    updateApprovalWarn("chargeApprovalWarn", selectedChargesSet.size, "charges");
 
     if (selectedChargesSet.size === 0) {
       el.selectedCharges.innerHTML = '<div class="muted" style="padding:4px">No charges selected</div>';
@@ -472,6 +484,8 @@ function enforceVicpolWarrantIdStatus(showToast = false) {
         countEl.textContent = "";
       }
     }
+
+    updateApprovalWarn("pinApprovalWarn", selectedPinsSet.size, "PINs");
 
     if (selectedPinsSet.size === 0) {
       el.selectedPins.innerHTML = '<div class="muted" style="padding:4px">No PINs selected</div>';
@@ -688,7 +702,7 @@ function enforceVicpolWarrantIdStatus(showToast = false) {
   // Maps charge name patterns to contextual writing reminders
   const NARRATIVE_HINT_RULES = [
     {
-      match: /evade|fail.*stop|pursuit/i,
+      match: /evade|fail.*stop|pursuit/i, topic: "code4-flee",
       hints: [
         "Pursuit duration (approx. start/end times)",
         "Route taken / direction of travel",
@@ -699,7 +713,7 @@ function enforceVicpolWarrantIdStatus(showToast = false) {
       ]
     },
     {
-      match: /murder|manslaughter|attempt.*murder|shots?\s*fired|discharge/i,
+      match: /murder|manslaughter|attempt.*murder|shots?\s*fired|discharge/i, topic: "use-of-force",
       hints: [
         "Weapon type, serial number, and ammo count for every weapon",
         "Who discharged their weapon and how many rounds",
@@ -710,7 +724,7 @@ function enforceVicpolWarrantIdStatus(showToast = false) {
       ]
     },
     {
-      match: /assault|injur|violence|battery|wound/i,
+      match: /assault|injur|violence|battery|wound/i, topic: "use-of-force",
       hints: [
         "Force justification — what threat did the suspect pose?",
         "Injuries sustained by all parties (suspect, officers, victims)",
@@ -720,7 +734,7 @@ function enforceVicpolWarrantIdStatus(showToast = false) {
       ]
     },
     {
-      match: /robbery|armed|steal|theft|burglary|break.*enter/i,
+      match: /robbery|armed|steal|theft|burglary|break.*enter/i, topic: "search-seizure",
       hints: [
         "Property stolen / recovered — descriptions and values",
         "Victim(s) details and statements",
@@ -730,7 +744,7 @@ function enforceVicpolWarrantIdStatus(showToast = false) {
       ]
     },
     {
-      match: /drug|narcotic|substance|possess.*controlled|manufacture|traffic.*drug/i,
+      match: /drug|narcotic|substance|possess.*controlled|manufacture|traffic.*drug/i, topic: "drugs",
       hints: [
         "Type and quantity of substance found",
         "NIK kit test result (positive/negative) and substance identified",
@@ -740,7 +754,7 @@ function enforceVicpolWarrantIdStatus(showToast = false) {
       ]
     },
     {
-      match: /weapon|firearm|pistol|rifle|knife|prohibited|carry.*weapon|possess.*weapon/i,
+      match: /weapon|firearm|pistol|rifle|knife|prohibited|carry.*weapon|possess.*weapon/i, topic: "charges-pins",
       hints: [
         "Weapon type, make/model, and serial number",
         "Ammunition type and count",
@@ -750,7 +764,7 @@ function enforceVicpolWarrantIdStatus(showToast = false) {
       ]
     },
     {
-      match: /speed|dangerous.*driv|reckless.*driv|DUI|drink.*driv|impaired|exceed.*limit/i,
+      match: /speed|dangerous.*driv|reckless.*driv|DUI|drink.*driv|impaired|exceed.*limit/i, topic: "rbt-rdt",
       hints: [
         "Speed recorded vs. speed limit of the zone",
         "Method of speed detection (radar, lidar, pacing, estimated)",
@@ -760,7 +774,7 @@ function enforceVicpolWarrantIdStatus(showToast = false) {
       ]
     },
     {
-      match: /resist|obstruct|hinder|fail.*comply|refuse.*direction/i,
+      match: /resist|obstruct|hinder|fail.*comply|refuse.*direction/i, topic: "arrest-caution",
       hints: [
         "What lawful direction was given and by whom?",
         "How did the suspect resist or obstruct? (verbal, physical, passive)",
@@ -769,7 +783,7 @@ function enforceVicpolWarrantIdStatus(showToast = false) {
       ]
     },
     {
-      match: /kidnap|hostage|false.*imprison|deprivation.*liberty/i,
+      match: /kidnap|hostage|false.*imprison|deprivation.*liberty/i, topic: "use-of-force",
       hints: [
         "Victim(s) — names, how they were taken, duration held",
         "Demands made by suspect (if any)",
@@ -779,7 +793,7 @@ function enforceVicpolWarrantIdStatus(showToast = false) {
       ]
     },
     {
-      match: /bail|breach.*bail/i,
+      match: /bail|breach.*bail/i, topic: "",
       hints: [
         "Original bail conditions that were breached",
         "Specifics of the breach — what the suspect did",
@@ -787,7 +801,7 @@ function enforceVicpolWarrantIdStatus(showToast = false) {
       ]
     },
     {
-      match: /fail.*stop|evade|pursuit|anpr|vehicle.*offence/i,
+      match: /fail.*stop|evade|pursuit|anpr|vehicle.*offence/i, topic: "code4-flee",
       hints: [
         "Was the stop initiated by ANPR, officer observation, or LEAP intelligence?",
         "Vehicle details — rego, make, model, and colour from VICROADS or observation",
@@ -812,9 +826,11 @@ function enforceVicpolWarrantIdStatus(showToast = false) {
     const allCharges = Array.from(selectedChargesSet).join(" | ");
     const matchedHints = [];
     const seenHints = new Set();
+    let guideTopic = "";
 
     NARRATIVE_HINT_RULES.forEach(rule => {
       if (rule.match.test(allCharges)) {
+        if (!guideTopic && rule.topic) guideTopic = rule.topic;
         rule.hints.forEach(h => {
           if (!seenHints.has(h)) {
             seenHints.add(h);
@@ -827,6 +843,7 @@ function enforceVicpolWarrantIdStatus(showToast = false) {
     // Always show universal reminders for arrest-type reports
     const type = state.reportType;
     if (["arrest","vicpol_arrest"].includes(type) && matchedHints.length === 0) {
+      guideTopic = "arrest-caution";
       matchedHints.push(
         "How was the suspect identified? (licence, MDT, fingerprints, verbal)",
         "Was caution read? Did suspect acknowledge?",
@@ -839,6 +856,11 @@ function enforceVicpolWarrantIdStatus(showToast = false) {
       return;
     }
 
+    const guideBtn = document.getElementById("narrativeGuideBtn");
+    if (guideBtn) {
+      guideBtn.dataset.guideTopic = guideTopic;
+      guideBtn.style.display = guideTopic ? "" : "none";
+    }
     list.innerHTML = matchedHints.map(h => '<div class="nh-item">' + escapeHtml(h) + '</div>').join("");
     panel.classList.add("show");
   }
@@ -905,7 +927,8 @@ function enforceVicpolWarrantIdStatus(showToast = false) {
       
       const content = document.createElement('div');
       const chargeAlias = getEntryUiAlias(charge.name);
-      content.innerHTML = '<div style="font-weight:900; font-size:12px; margin-bottom:4px">' + escapeHtml(charge.name) + '</div>' +
+      const indPill = /indictable|NI\/I/i.test(charge.sentenceType || "") ? ' <span class="pill-ind">IND</span>' : '';
+      content.innerHTML = '<div style="font-weight:900; font-size:12px; margin-bottom:4px">' + escapeHtml(charge.name) + indPill + '</div>' +
         (chargeAlias ? '<div style="font-size:11px; color:var(--muted); margin-bottom:4px">Plain English: ' + escapeHtml(chargeAlias) + '</div>' : '') +
         '<div style="font-size:11px; color:var(--muted)">' + escapeHtml(charge.cat) + ' | ' + escapeHtml(charge.cost) + ' | ' + escapeHtml(charge.sentenceType) + ' | ' + escapeHtml(charge.liability) + '</div>' +
         (charge.notes ? '<div style="font-size:11px; color:var(--muted); margin-top:4px">' + escapeHtml(charge.notes) + '</div>' : '');
@@ -949,7 +972,9 @@ function enforceVicpolWarrantIdStatus(showToast = false) {
       
       const content = document.createElement('div');
       const pinAlias = getEntryUiAlias(pin.name);
-      content.innerHTML = '<div style="font-weight:900; font-size:12px; margin-bottom:4px">' + escapeHtml(pin.name) + '</div>' +
+      const ptsMatch = String(pin.points || "").match(/(\d+)\s*pts?/i);
+      const ptsPill = ptsMatch && parseInt(ptsMatch[1]) > 0 ? ' <span class="pill-pts">' + ptsMatch[1] + ' pts</span>' : '';
+      content.innerHTML = '<div style="font-weight:900; font-size:12px; margin-bottom:4px">' + escapeHtml(pin.name) + ptsPill + '</div>' +
         (pinAlias ? '<div style="font-size:11px; color:var(--muted); margin-bottom:4px">Plain English: ' + escapeHtml(pinAlias) + '</div>' : '') +
         '<div style="font-size:11px; color:var(--muted)">' + escapeHtml(pin.cat) + ' | $' + escapeHtml(pin.cost) + ' | ' + escapeHtml(pin.points) + ' | ' + escapeHtml(pin.liability) + '</div>';
       
@@ -1621,11 +1646,11 @@ function enforceVicpolWarrantIdStatus(showToast = false) {
   const REPORT_TYPE_LABEL = {
     arrest: "ARREST REPORT",
     vicpol_arrest: "ARREST WARRANT",
-    vicpol_warrant: "CRIMINAL WARRANT",
+    vicpol_warrant: "WARRANT FOR QUESTIONING",
     bail_conditions: "BAIL CONDITIONS",
     traffic_warrant: "TRAFFIC WARRANT",
     field_contact: "FIELD CONTACT REPORT",
-    search_seizure: "SEARCH AND SEIZURE",
+    search_seizure: "SEARCH & SEIZURE",
     vehicle_inspection: "VEHICLE INSPECTION REPORT"
   };
 
@@ -1633,7 +1658,8 @@ function enforceVicpolWarrantIdStatus(showToast = false) {
     "arrest",
     "vicpol_arrest",
     "vicpol_warrant",
-    "bail_conditions",
+    // "bail_conditions" — hidden while bail is disabled in the city; re-add here
+    // and restore the <option> in index.html to re-enable.
     "traffic_warrant",
     "field_contact",
     "search_seizure",

@@ -51,7 +51,9 @@
 <option value="arrest">Arrest Report (General)</option>
 <option value="vicpol_arrest">VicPol Warrant for Arrest</option>
 <option value="vicpol_warrant">VicPol Warrant for Questioning</option>
-<option value="bail_conditions">Bail Conditions</option>
+<!-- Bail Conditions hidden while bail is disabled in the city; restore this option
+     (and "bail_conditions" in VICPOL_ALLOWED_REPORT_TYPES, core.js) to re-enable:
+     <option value="bail_conditions">Bail Conditions</option> -->
 <option value="traffic_warrant">Traffic Warrant</option>
 <option value="field_contact">Field Contact Report</option>
 <option value="search_seizure">Search &amp; Seizure</option>
@@ -131,6 +133,7 @@
 <button class="btn" id="clearChargesBtn">Clear All</button>
 </div>
 <div id="selectedCharges" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; min-height:32px; padding:8px; background:rgba(0,0,0,0.2); border-radius:8px; border:1px solid var(--border)"></div>
+<div id="chargeApprovalWarn" style="display:none;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;padding:8px 12px;border:1px solid rgba(255,180,80,0.35);background:rgba(255,180,80,0.08);border-radius:8px;font-size:12px;color:var(--warn)"><span></span><button class="btn" data-guide-topic="charges-pins" style="font-size:10px;padding:4px 8px;flex-shrink:0" type="button">📖 Guide</button></div>
 <div id="chargeFineTotal" style="display:none; margin-bottom:10px; padding:8px 12px; background:rgba(108,138,255,0.1); border:1px solid rgba(108,138,255,0.25); border-radius:8px; font-size:12px; justify-content:space-between; align-items:center">
 <span style="color:var(--muted)">Total fines range:</span>
 <span id="chargeFineAmount" style="font-weight:900; color:var(--accent)">$0</span>
@@ -148,6 +151,7 @@
 <button class="btn" id="clearPinsBtn">Clear All</button>
 </div>
 <div id="selectedPins" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; min-height:32px; padding:8px; background:rgba(0,0,0,0.2); border-radius:8px; border:1px solid var(--border)"></div>
+<div id="pinApprovalWarn" style="display:none;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;padding:8px 12px;border:1px solid rgba(255,180,80,0.35);background:rgba(255,180,80,0.08);border-radius:8px;font-size:12px;color:var(--warn)"><span></span><button class="btn" data-guide-topic="charges-pins" style="font-size:10px;padding:4px 8px;flex-shrink:0" type="button">📖 Guide</button></div>
 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px; padding:10px; background:rgba(0,0,0,0.15); border:1px solid var(--border); border-radius:10px">
 <label><div class="lbl">Subject's Current Demerit Points <span style="font-weight:400;color:var(--ok)">(auto-fills from LEAP/OCR)</span></div><input id="currentDemeritPoints" inputmode="numeric" max="50" min="0" placeholder="0" style="margin:0" type="number" value="0"/></label>
 <div style="align-self:end;font-size:12px;color:var(--muted);padding:10px 0">12+ pts in 7 days = mandatory suspension</div>
@@ -473,6 +477,7 @@ Date        P?    Amount        Offence
 <label><div class="lbl">Callsign</div><input autocomplete="off" id="vpOfficerCallsign" placeholder="POR 431"/></label>
 <label><div class="lbl">Rank</div><select id="vpOfficerRank"><option value="">Rank…</option></select></label>
 </div>
+<div id="vpCallsignHint" style="display:none;font-size:11px;color:var(--warn);margin-top:4px">Callsign looks unusual — expected like <strong>MEL 228</strong> or <strong>POR 431</strong>. It will still be added as typed.</div>
 <div style="display:grid;grid-template-columns:1fr 110px;gap:10px;align-items:end;margin-top:10px">
 <label><div class="lbl">Name</div><input autocomplete="off" id="vpOfficerName" placeholder="Joseph O'Connelley"/></label>
 <button class="btn" id="vpAddOfficerBtn" style="margin-top:0">+ Add</button>
@@ -569,7 +574,7 @@ Date        P?    Amount        Offence
 or: At approximately [TIME] HRS on [DATE], [CALLSIGN] ([NAME]) was on patrol when..." rows="5"></textarea>
 <!-- v47.2: Smart Narrative Prompts — populated dynamically based on charges -->
 <div class="narrative-hints" id="narrativeHints">
-<div class="nh-title">📋 Remember to include — based on your charges</div>
+<div class="nh-title" style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span>📋 Remember to include — based on your charges</span><button class="btn" data-guide-topic="" id="narrativeGuideBtn" style="font-size:10px;padding:3px 8px;flex-shrink:0;display:none;text-transform:none;letter-spacing:normal" type="button">📖 Guide</button></div>
 <div id="narrativeHintsList"></div>
 </div>
 </div>

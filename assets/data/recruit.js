@@ -422,7 +422,7 @@ const RECRUIT_HANDBOOK = [
       '<p><strong>Progression unlocks (General Duties):</strong></p>' +
       '<ul>' +
       '<li><strong>Constable +</strong> — request Speed Radar &amp; ANPR; apply for K9, Marine/Water Police, Crime Scene Services.</li>' +
-      '<li><strong>First Constable +</strong> — request Unmarked patrols; apply for PORT, Bomb Response Unit, POLAIR/Airwing; transfer to Highway Patrol; become FTO/SFTO (on invite at S/CST); join CIU.</li>' +
+      '<li><strong>First Constable +</strong> — request Unmarked patrols; apply for PORT, Bomb Response Unit, POLAIR/Airwing; transfer to Highway Patrol; become FTO/SFTO (on invite at SC); join CIU.</li>' +
       '<li><strong>Senior Constable +</strong> — RCV cert (PORT only); carry the service shotgun while PORT; transfer to CIRT; obtain Gold Class licence (min 30 days); apply for Certification FTO; considered for leadership (if invited).</li>' +
       '</ul>' +
       '<p><strong>Certifications &amp; how to apply:</strong></p>' +
