@@ -69,7 +69,10 @@
       vicpol_warrant: "Questioning warrant — use when identity is UNCONFIRMED. Suspect placed at scene by evidence (DNA, shells, CCTV) but not directly identified.",
       vicpol_arrest: "Arrest warrant — use when identity IS CONFIRMED beyond reasonable doubt (licence, MDT, fingerprints, verbal confirmation).",
       bail_conditions: "Use after processing to document agreed bail terms and restrictions.",
-      search_seizure: "Documents the legal authority and findings of a person or premises search."
+      search_seizure: "Documents the legal authority and findings of a person or premises search.",
+      traffic_warrant: "Traffic offence paperwork — MELROADS paste auto-fills the vehicle, the impound schedule fills duration & fine, and there's a failed-intercept option if the vehicle fled.",
+      field_contact: "Non-offence interaction record — welfare checks, move-on orders, community engagement. No charges attached.",
+      vehicle_inspection: "MVS 2025 roadworthy checklist — mandatory items are instant defects; advisory items produce a fix-it notice."
     };
 
     function updateReportTypeHint() {

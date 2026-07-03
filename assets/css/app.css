@@ -741,9 +741,17 @@
     .rh-warn{border-left:3px solid var(--warn);background:rgba(255,170,0,0.08);padding:8px 12px;border-radius:0 6px 6px 0;margin:10px 0;font-size:12.5px}
     .rh-empty{color:var(--muted);text-align:center;padding:30px 10px;font-size:13px}
     .rh-section mark{background:rgba(255,200,0,0.35);color:inherit;border-radius:2px;padding:0 1px}
+    .rh-links{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0 2px}
+    .rh-links-label{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em}
+    .rh-tool-link{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:1px solid rgba(0,191,255,0.35);background:rgba(0,191,255,0.10);color:var(--accent);font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;transition:background 0.15s,border-color 0.15s}
+    .rh-tool-link:hover{background:rgba(0,191,255,0.20);border-color:var(--accent)}
+    .rh-jump-link{background:none;border:none;padding:0;color:var(--accent);font-weight:800;cursor:pointer;text-decoration:underline;font-size:inherit;font-family:inherit}
+    .rh-jump-link:hover{opacity:0.85}
     body.light-mode .rh-controls{background:var(--bg)}
     body.light-mode .rh-toggle:hover{background:rgba(0,102,204,0.08)}
     body.light-mode .rh-body-inner strong{color:#001F3F}
     body.light-mode .rh-table th{background:rgba(0,102,204,0.12)}
+    body.light-mode .rh-tool-link{background:rgba(0,102,204,0.08);border-color:rgba(0,102,204,0.35)}
+    body.light-mode .rh-tool-link:hover{background:rgba(0,102,204,0.16)}
 
   
