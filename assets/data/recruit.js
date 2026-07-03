@@ -70,13 +70,13 @@ const RECRUIT_HANDBOOK = [
   {
     id: "ranks", group: "Quick Reference", icon: "🎖️",
     title: "Rank Structure & Insignia",
-    keywords: "rank structure chain of command recruit probationary constable first senior leading sergeant inspector superintendent insignia spc",
+    keywords: "rank structure chain of command recruit probationary constable first senior leading sergeant inspector superintendent insignia spc rct pcon con",
     html:
       '<p>Chain of command, junior to senior (<strong>Superintendent</strong> is highest):</p>' +
       '<table class="rh-table"><thead><tr><th>#</th><th>Rank</th><th>Abbr.</th></tr></thead><tbody>' +
-      '<tr><td>1</td><td>Recruit</td><td>REC</td></tr>' +
-      '<tr><td>2</td><td>Probationary Constable</td><td>PROB</td></tr>' +
-      '<tr><td>3</td><td>Constable</td><td>CST</td></tr>' +
+      '<tr><td>1</td><td>Recruit</td><td>RCT</td></tr>' +
+      '<tr><td>2</td><td>Probationary Constable</td><td>PCON</td></tr>' +
+      '<tr><td>3</td><td>Constable</td><td>CON</td></tr>' +
       '<tr><td>4</td><td>First Constable</td><td>FC</td></tr>' +
       '<tr><td>5</td><td>Senior Constable</td><td>SC</td></tr>' +
       '<tr><td>6</td><td>Leading Senior Constable</td><td>LSC</td></tr>' +

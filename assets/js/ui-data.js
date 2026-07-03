@@ -2059,7 +2059,7 @@
     const callsigns = dedupeUpperList([currentCallsign, ...(officer.callsigns || [])]);
     const division = norm(officer.division || parsed?.division);
     const divisions = dedupeKeepCase([...(officer.divisions || []), division]);
-    const rank = norm(officer.rank || parsed?.rank).toUpperCase();
+    const rank = canonicalRankAbbr(officer.rank || parsed?.rank);
     const name = norm(officer.name || parsed?.name || stripCallsignFromLine(full));
     return {
       full,
@@ -2082,7 +2082,7 @@
     const s = (line || "").trim();
     if (!s) return null;
     // Patterns: "MEL 228 | SC Smith", "MEL 228 | SC Smith | Ops", "POR440 SC Jones", "MEL 228"
-    const m = s.match(/^([A-Z]{2,5}\s*\d{1,4})\s*(?:\||\s)\s*(?:(A\/SGT|A\/INSP|A\/SUPT|SGT|S\/SGT|INSP|SUPT|CHIEF|REC|RECRUIT|PROB|PO|CST|CONST|SPC|SC|S\/C|LSC|FC|FST)\b\.?\s+)?(.+?)$/i);
+    const m = s.match(/^([A-Z]{2,5}\s*\d{1,4})\s*(?:\||\s)\s*(?:(A\/SGT|A\/INSP|A\/SUPT|SGT|S\/SGT|INSP|SUPT|CHIEF|RECRUIT|RCT|REC|PCON|PROB|PO|CST|CONST|CON|SPC|SC|S\/C|LSC|FC|FST)\b\.?\s+)?(.+?)$/i);
     if (m) {
       const callsign = m[1].trim().toUpperCase();
       const rank = (m[2] || "").trim().toUpperCase();
@@ -3067,9 +3067,9 @@
   // abbreviation written into officer lines and the full name shown in the UI.
   const VICPOL_RANK_LADDER = [
     { abbr: "SPC",   name: "Special Constable" },
-    { abbr: "REC",   name: "Recruit" },
-    { abbr: "PROB",  name: "Probationary Constable" },
-    { abbr: "CST",   name: "Constable" },
+    { abbr: "RCT",   name: "Recruit" },
+    { abbr: "PCON",  name: "Probationary Constable" },
+    { abbr: "CON",   name: "Constable" },
     { abbr: "FC",    name: "First Constable" },
     { abbr: "SC",    name: "Senior Constable" },
     { abbr: "LSC",   name: "Leading Senior Constable" },
@@ -3079,7 +3079,7 @@
     { abbr: "SUPT",  name: "Superintendent" }
   ];
   // Common abbreviation variants → canonical ladder abbr (acting ranks fold to base).
-  const RANK_ABBR_ALIASES = { "CONST": "CST", "S/C": "SC", "RECRUIT": "REC", "A/SGT": "SGT", "A/INSP": "INSP", "A/SUPT": "SUPT" };
+  const RANK_ABBR_ALIASES = { "REC": "RCT", "RECRUIT": "RCT", "PROB": "PCON", "CST": "CON", "CONST": "CON", "S/C": "SC", "A/SGT": "SGT", "A/INSP": "INSP", "A/SUPT": "SUPT" };
   function canonicalRankAbbr(raw) {
     const up = norm(raw).toUpperCase();
     if (!up) return "";
