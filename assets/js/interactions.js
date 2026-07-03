@@ -84,6 +84,17 @@
       showToolPage('ocr');
       return;
     }
+
+    // "/" → focus Recruit Helper search (when on the recruit page and not typing)
+    if (key === "/" && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      const t = e.target;
+      const typing = t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT" || t.isContentEditable);
+      const recruitActive = document.getElementById("recruitPage")?.classList.contains("active");
+      if (!typing && recruitActive) {
+        e.preventDefault();
+        document.getElementById("rhSearch")?.focus();
+      }
+    }
   });
 
   // ============================================================================
@@ -371,6 +382,15 @@
   setPreviewStickyOffset();
   updateToolChrome('report');
 
+  // Restore the last active tab (a #report/#traffic/#ocr/#recruit hash wins over storage)
+  try {
+    const pages = ['report', 'traffic', 'ocr', 'recruit'];
+    const hashPage = (location.hash || '').replace('#', '');
+    const stored = localStorage.getItem('vicpol_active_tab');
+    const initial = pages.includes(hashPage) ? hashPage : (pages.includes(stored) ? stored : 'report');
+    if (initial !== 'report') showToolPage(initial);
+  } catch {}
+
   // Delegated remove buttons (avoids fragile inline onclick escaping)
   if (el.selectedCharges) {
     el.selectedCharges.addEventListener('click', (e) => {
@@ -420,6 +440,7 @@
       tab.setAttribute('aria-selected', 'true');
     }
     updateToolChrome(target);
+    try { localStorage.setItem('vicpol_active_tab', target); } catch {}
   }
 
   window.showToolPage = showToolPage;

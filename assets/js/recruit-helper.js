@@ -1,5 +1,8 @@
 /* Recruit Helper page — renders the RECRUIT_HANDBOOK reference as searchable accordion
-   sections. Standalone reference; does NOT touch report state, output or persistence. */
+   sections. Standalone reference; never writes report state on its own. Handbook entries
+   may embed shortcut buttons (data-rh-report / data-rh-page / data-rh-jump) that jump to
+   the Report Tool with the matching report type selected, open another tool page, or
+   scroll to a sibling handbook section. */
 
 (function () {
   "use strict";
@@ -15,6 +18,10 @@
   function rhStripText(html) {
     var d = document.createElement("div");
     d.innerHTML = html || "";
+    // Shortcut pill labels ("Arrest Report", ...) must not pollute the search haystack,
+    // or every linked topic would match a search for "arrest".
+    var links = d.querySelectorAll(".rh-links");
+    for (var i = 0; i < links.length; i++) links[i].parentNode.removeChild(links[i]);
     return (d.textContent || d.innerText || "").replace(/\s+/g, " ");
   }
 
@@ -43,6 +50,7 @@
       }
       var wrap = document.createElement("div");
       wrap.className = "rh-section";
+      wrap.id = "rh-sec-" + sec.id;
       wrap.dataset.rhSection = "1";
       wrap.dataset.haystack = (sec.title + " " + (sec.keywords || "") + " " + rhStripText(sec.html)).toLowerCase();
 
@@ -134,11 +142,82 @@
     });
   }
 
+  // Switch to the Report Tool with the given report type pre-selected. Dispatches a
+  // real change event so the existing binding handles state, persistence and preview.
+  function openReportTool(reportType) {
+    var sel = document.getElementById("reportType");
+    if (sel && reportType && sel.value !== reportType) {
+      sel.value = reportType;
+      if (sel.value === reportType) sel.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+    if (typeof window.showToolPage === "function") window.showToolPage("report");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function jumpToSection(id) {
+    var sec = document.getElementById("rh-sec-" + id);
+    if (!sec) return;
+    if (sec.style.display === "none") {
+      // Target is filtered out by the current search — clear it first
+      var search = document.getElementById("rhSearch");
+      if (search) search.value = "";
+      filterRecruit("");
+    }
+    toggleSection(sec, true);
+    sec.scrollIntoView({ behavior: "smooth", block: "start" });
+    // Flash the section so the reader sees where they landed
+    sec.classList.remove("rh-flash");
+    void sec.offsetWidth;
+    sec.classList.add("rh-flash");
+    sec.addEventListener("animationend", function () { sec.classList.remove("rh-flash"); }, { once: true });
+    setTimeout(function () { sec.classList.remove("rh-flash"); }, 1600);
+  }
+
+  // Entry point for "📖 guide" buttons elsewhere in the app ([data-guide-topic]):
+  // switch to the Recruit Helper page and open + scroll to the given topic.
+  function openRecruitTopic(id) {
+    if (!id) return;
+    initRecruitHelper();
+    if (typeof window.showToolPage === "function") window.showToolPage("recruit");
+    jumpToSection(id);
+  }
+
+  function bindGuideTopicLinks() {
+    if (document.body.dataset.guideTopicBound === "1") return;
+    document.body.dataset.guideTopicBound = "1";
+    document.addEventListener("click", function (e) {
+      var btn = e.target && e.target.closest ? e.target.closest("[data-guide-topic]") : null;
+      if (!btn || !btn.dataset.guideTopic) return;
+      openRecruitTopic(btn.dataset.guideTopic);
+    });
+  }
+
+  function bindShortcutLinks() {
+    var container = host();
+    if (!container) return;
+    container.addEventListener("click", function (e) {
+      var link = e.target && e.target.closest
+        ? e.target.closest("[data-rh-report],[data-rh-page],[data-rh-jump]")
+        : null;
+      if (!link || !container.contains(link)) return;
+      if (link.dataset.rhReport) {
+        openReportTool(link.dataset.rhReport);
+      } else if (link.dataset.rhPage) {
+        if (typeof window.showToolPage === "function") window.showToolPage(link.dataset.rhPage);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else if (link.dataset.rhJump) {
+        jumpToSection(link.dataset.rhJump);
+      }
+    });
+  }
+
   function initRecruitHelper() {
     if (rendered) return;
     if (!host()) return;
     rendered = true;
     renderRecruitHelper();
+    bindShortcutLinks();
+    bindGuideTopicLinks();
 
     var search = document.getElementById("rhSearch");
     if (search) search.addEventListener("input", function () { filterRecruit(search.value); });
@@ -160,5 +239,6 @@
     window.initRecruitHelper = initRecruitHelper;
     window.renderRecruitHelper = renderRecruitHelper;
     window.filterRecruit = filterRecruit;
+    window.openRecruitTopic = openRecruitTopic;
   }
 })();

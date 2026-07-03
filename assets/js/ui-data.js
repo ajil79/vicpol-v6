@@ -66,10 +66,25 @@
   function bindInputs() {
     // Report type
     const REPORT_TYPE_HINTS = {
+      arrest: "Standard post-arrest report — charges, PINs, items, narrative and sentence in one document.",
       vicpol_warrant: "Questioning warrant — use when identity is UNCONFIRMED. Suspect placed at scene by evidence (DNA, shells, CCTV) but not directly identified.",
       vicpol_arrest: "Arrest warrant — use when identity IS CONFIRMED beyond reasonable doubt (licence, MDT, fingerprints, verbal confirmation).",
       bail_conditions: "Use after processing to document agreed bail terms and restrictions.",
-      search_seizure: "Documents the legal authority and findings of a person or premises search."
+      search_seizure: "Documents the legal authority and findings of a person or premises search.",
+      traffic_warrant: "Traffic offence paperwork — MELROADS paste auto-fills the vehicle, the impound schedule fills duration & fine, and there's a failed-intercept option if the vehicle fled.",
+      field_contact: "Non-offence interaction record — welfare checks, move-on orders, community engagement. No charges attached.",
+      vehicle_inspection: "MVS 2025 roadworthy checklist — mandatory items are instant defects; advisory items produce a fix-it notice."
+    };
+
+    // Recruit Helper topic backing each report type (📖 button in the hint bar).
+    // vehicle_inspection and bail_conditions have no guide topic — button hidden.
+    const REPORT_TYPE_GUIDE_TOPICS = {
+      arrest: "arrest-caution",
+      vicpol_arrest: "code4-flee",
+      vicpol_warrant: "code4-flee",
+      traffic_warrant: "impounds",
+      field_contact: "warrants",
+      search_seizure: "search-seizure"
     };
 
     function updateReportTypeHint() {
@@ -78,16 +93,19 @@
       if (!hintDiv || !hintText) return;
       const msg = REPORT_TYPE_HINTS[state.reportType];
       hintText.textContent = msg || "";
-      hintDiv.style.display = msg ? "" : "none";
+      const guideBtn = document.getElementById("reportTypeGuideBtn");
+      const topic = REPORT_TYPE_GUIDE_TOPICS[state.reportType] || "";
+      if (guideBtn) {
+        guideBtn.dataset.guideTopic = topic;
+        guideBtn.style.display = topic ? "" : "none";
+      }
+      hintDiv.style.display = (msg || topic) ? "" : "none";
     }
 
     if (el.reportType) {
       el.reportType.addEventListener("change", () => {
         state.reportType = sanitizeVicPolReportType(el.reportType.value);
         if (el.reportType.value !== state.reportType) el.reportType.value = state.reportType;
-        try {
-          localStorage.setItem("vicpol_report_last_report_type", state.reportType);
-        } catch {}
         updateReportTypeUI();
         updateReportTypeHint();
         debouncedRenderPreview();
@@ -152,6 +170,21 @@
       }
     });
 
+    // Shared MELROADS/MDT vehicle fill: writes parsed values only into EMPTY fields
+    // (inputs and selects alike), keeping the tw and sw paste paths identical.
+    // `fields` = [{ from: parsedKey, id: elementId, obj: stateObject, key: stateKey }]
+    function applyParsedVehicleFields(v, fields) {
+      fields.forEach(f => {
+        const val = v[f.from];
+        if (!val) return;
+        const node = document.getElementById(f.id);
+        if (node && !node.value) {
+          node.value = val;
+          f.obj[f.key] = val;
+        }
+      });
+    }
+
     // MELROADS paste auto-parser for traffic warrant
     const twMelroadsPaste = document.getElementById("twMelroadsPaste");
     if (twMelroadsPaste) {
@@ -164,29 +197,16 @@
         if (!p.vehicle) return;
         const v = p.vehicle;
         const tw = state.trafficWarrant;
-        const fill = (elId, stateKey, val) => {
-          if (!val) return;
-          const field = document.getElementById(elId);
-          if (field && !field.value) {
-            field.value = val;
-            tw[stateKey] = val;
-          }
-        };
-        fill('twRego', 'rego', v.rego);
-        fill('twModel', 'model', v.model);
-        fill('twColour', 'colour', v.colour);
-        fill('twRegoExpires', 'regoExpires', v.expires);
-        fill('twOwner', 'owner', v.owner);
-        // Selects need special handling
-        if (v.registered && el.twRegistered && !el.twRegistered.value) {
-          el.twRegistered.value = v.registered; tw.registered = v.registered;
-        }
-        if (v.stolen && el.twStolen && !el.twStolen.value) {
-          el.twStolen.value = v.stolen; tw.stolen = v.stolen;
-        }
-        if (v.suspended && el.twSuspended && !el.twSuspended.value) {
-          el.twSuspended.value = v.suspended; tw.suspended = v.suspended;
-        }
+        applyParsedVehicleFields(v, [
+          { from: 'rego', id: 'twRego', obj: tw, key: 'rego' },
+          { from: 'model', id: 'twModel', obj: tw, key: 'model' },
+          { from: 'colour', id: 'twColour', obj: tw, key: 'colour' },
+          { from: 'expires', id: 'twRegoExpires', obj: tw, key: 'regoExpires' },
+          { from: 'owner', id: 'twOwner', obj: tw, key: 'owner' },
+          { from: 'registered', id: 'twRegistered', obj: tw, key: 'registered' },
+          { from: 'stolen', id: 'twStolen', obj: tw, key: 'stolen' },
+          { from: 'suspended', id: 'twSuspended', obj: tw, key: 'suspended' }
+        ]);
         // Also fill offender name from owner if empty
         if (v.owner && el.offenderName && !el.offenderName.value) {
           el.offenderName.value = v.owner;
@@ -317,7 +337,42 @@
           const key = field.substring(2);
           const lowerKey = key.charAt(0).toLowerCase() + key.slice(1);
           state.vicpolWarrant[lowerKey] = el[field].value;
-          if (field==="swPaste"&&el[field].value.trim()){const sp=parseOCR(el[field].value);const mg={name:sp.offender.name||state.offender.name,dob:sp.offender.dob||state.offender.dob,sex:sp.offender.sex||state.offender.sex,address:sp.offender.address||state.offender.address,phone:sp.offender.phone||state.offender.phone};if(sp.offender.name||sp.offender.dob){fillOffenderFields(mg);if(mg.name)upsertPerson(mg);}if(sp.license){state.currentDemeritPoints=sp.license.demeritPoints||0;state.licenseStatus=sp.license.licenseStatus||"";state.licenseClass=sp.license.licenseClass||"";const _di=document.getElementById("currentDemeritPoints");if(_di)_di.value=state.currentDemeritPoints;updateLicenseWarning();}if(sp.vehicle){const v=sp.vehicle,sw=state.vicpolWarrant;if(v.rego&&!sw.rego){sw.rego=v.rego;if(el.swRego)el.swRego.value=v.rego;}if(v.model&&!sw.model){sw.model=v.model;if(el.swModel)el.swModel.value=v.model;}if(v.colour&&!sw.colour){sw.colour=v.colour;if(el.swColour)el.swColour.value=v.colour;}if(v.registered&&!sw.registered){sw.registered=v.registered;if(el.swRegistered)el.swRegistered.value=v.registered;}if(v.expires&&!sw.regoExpires){sw.regoExpires=v.expires;if(el.swRegoExpires)el.swRegoExpires.value=v.expires;}if(v.stolen){sw.stolen=v.stolen;if(el.swStolen)el.swStolen.value=v.stolen;}if(v.suspended){sw.suspended=v.suspended;if(el.swSuspended)el.swSuspended.value=v.suspended;}if(v.owner&&!sw.owner){sw.owner=v.owner;if(el.swOwner)el.swOwner.value=v.owner;}}toast("MDT paste auto-filled fields", "ok");}
+          if (field === "swPaste" && el[field].value.trim()) {
+            const sp = parseOCR(el[field].value);
+            const mg = {
+              name: sp.offender.name || state.offender.name,
+              dob: sp.offender.dob || state.offender.dob,
+              sex: sp.offender.sex || state.offender.sex,
+              address: sp.offender.address || state.offender.address,
+              phone: sp.offender.phone || state.offender.phone
+            };
+            if (sp.offender.name || sp.offender.dob) {
+              fillOffenderFields(mg);
+              if (mg.name) upsertPerson(mg);
+            }
+            if (sp.license) {
+              state.currentDemeritPoints = sp.license.demeritPoints || 0;
+              state.licenseStatus = sp.license.licenseStatus || "";
+              state.licenseClass = sp.license.licenseClass || "";
+              const di = document.getElementById("currentDemeritPoints");
+              if (di) di.value = state.currentDemeritPoints;
+              updateLicenseWarning();
+            }
+            if (sp.vehicle) {
+              const sw = state.vicpolWarrant;
+              applyParsedVehicleFields(sp.vehicle, [
+                { from: 'rego', id: 'swRego', obj: sw, key: 'rego' },
+                { from: 'model', id: 'swModel', obj: sw, key: 'model' },
+                { from: 'colour', id: 'swColour', obj: sw, key: 'colour' },
+                { from: 'expires', id: 'swRegoExpires', obj: sw, key: 'regoExpires' },
+                { from: 'owner', id: 'swOwner', obj: sw, key: 'owner' },
+                { from: 'registered', id: 'swRegistered', obj: sw, key: 'registered' },
+                { from: 'stolen', id: 'swStolen', obj: sw, key: 'stolen' },
+                { from: 'suspended', id: 'swSuspended', obj: sw, key: 'suspended' }
+              ]);
+            }
+            toast("MDT paste auto-filled fields", "ok");
+          }
           if (field === "swIdStatus" || field === "swIdBasis") enforceVicpolWarrantIdStatus(field === "swIdStatus");
           debouncedRenderPreview();
           throttledAutosave();
@@ -640,6 +695,16 @@
         if (e.key === "Enter") { e.preventDefault(); addStructuredOfficer(); }
       });
     });
+    // Soft callsign format hint — advisory only, never blocks Add
+    if (el.vpOfficerCallsign) {
+      el.vpOfficerCallsign.addEventListener("input", () => {
+        const hint = document.getElementById("vpCallsignHint");
+        if (!hint) return;
+        const val = el.vpOfficerCallsign.value.trim();
+        const looksOk = !val || /^[A-Z]{2,4}\s?\d{1,4}\s?[A-Z]?$/i.test(val);
+        hint.style.display = looksOk ? "none" : "block";
+      });
+    }
 
     // Quick-officer buttons (e.g. "Other officers on shift")
     document.querySelectorAll('.quick-officer').forEach(btn => {
@@ -913,10 +978,14 @@
           html += '</span><button class="validation-close-btn" type="button" style="background:none;border:none;color:inherit;cursor:pointer;font-size:14px;line-height:1;opacity:0.7;flex-shrink:0">✕</button></div>';
           // Required field warnings
           html += warnings.map(w => '<div class="vi"><span>' + escapeHtml(w) + '</span></div>').join("");
-          // Quality hints (amber, different icon)
+          // Quality hints (amber, different icon) — each may carry a 📖 guide chip
           if (hasQuality) {
             if (totalIssues > 0) html += '<div style="height:1px;background:var(--border);margin:8px 0"></div>';
-            html += qualityHints.map(h => '<div class="vi vi-quality"><span>' + escapeHtml(h) + '</span></div>').join("");
+            html += qualityHints.map(h =>
+              '<div class="vi vi-quality"><span>' + escapeHtml(h.text) + '</span>' +
+              (h.topic ? '<button class="btn" data-guide-topic="' + h.topic + '" style="font-size:10px;padding:3px 8px;flex-shrink:0;margin-left:auto" title="Open guide topic" type="button">📖</button>' : '') +
+              '</div>'
+            ).join("");
           }
           html += '</div>';
           panel.innerHTML = html;
@@ -2082,7 +2151,7 @@
     const s = (line || "").trim();
     if (!s) return null;
     // Patterns: "MEL 228 | SC Smith", "MEL 228 | SC Smith | Ops", "POR440 SC Jones", "MEL 228"
-    const m = s.match(/^([A-Z]{2,5}\s*\d{1,4})\s*(?:\||\s)\s*(?:(A\/SGT|A\/INSP|A\/SUPT|SGT|S\/SGT|INSP|SUPT|CHIEF|RECRUIT|RCT|REC|PCON|PROB|PO|CST|CONST|CON|SPC|SC|S\/C|LSC|FC|FST)\b\.?\s+)?(.+?)$/i);
+    const m = s.match(/^([A-Z]{2,5}\s*\d{1,4})\s*(?:\||\s)\s*(?:(A\/SGT|A\/INSP|A\/SUPT|SGT|S\/SGT|INSP|SUPT|CHIEF|RECRUIT|RCT|REC|PCON|PROB|CST|CONST|CON|SPC|SC|S\/C|LSC|FC)\b\.?\s+)?(.+?)$/i);
     if (m) {
       const callsign = m[1].trim().toUpperCase();
       const rank = (m[2] || "").trim().toUpperCase();
@@ -3530,6 +3599,7 @@
       btn.addEventListener("click", async () => {
         const ok = await copyToClipboard(s.text);
         toast(ok ? s.label + " copied" : "Failed to copy", ok ? "ok" : "err");
+        if (ok) flashCopiedLabel(btn);
       });
       bar.appendChild(btn);
     });

@@ -26,7 +26,8 @@ const RECRUIT_HANDBOOK = [
       '<tr><td>Code 12</td><td>Traffic Crash / Collision</td></tr>' +
       '<tr><td>Code 15</td><td>Silent Alarm / Robbery</td></tr>' +
       '<tr><td>Code 16</td><td>Collision with serious injuries</td></tr>' +
-      '</tbody></table>'
+      '</tbody></table>' +
+      '<p class="rh-note">Driver took off during your Code 4? See <button class="rh-jump-link" data-rh-jump="code4-flee" type="button">Fled Traffic Stop — Which Warrant?</button></p>'
   },
   {
     id: "phonetic", group: "Quick Reference", icon: "🔤",
@@ -179,7 +180,11 @@ const RECRUIT_HANDBOOK = [
     keywords: "rbt rdt breath test drug test traffic offence dangerous driving code 4 mandatory alcohol",
     html:
       '<p>Traffic-based offences require a mandatory <strong>Random Breath Test (RBT)</strong> and <strong>Random Drug Test (RDT)</strong>. Dangerous driving is a common trigger.</p>' +
-      '<p>Incorporate the RBT/RDT into your Code 4 (traffic stop) flow before charging traffic offences.</p>'
+      '<p>Incorporate the RBT/RDT into your Code 4 (traffic stop) flow before charging traffic offences.</p>' +
+      '<p class="rh-note">Driver fled before you could test? See <button class="rh-jump-link" data-rh-jump="code4-flee" type="button">Fled Traffic Stop — Which Warrant?</button></p>' +
+      '<div class="rh-links"><span class="rh-links-label">Write it up:</span>' +
+      '<button class="rh-tool-link" data-rh-report="arrest" type="button">📝 Arrest Report — DUI / drug-driving charges</button>' +
+      '</div>'
   },
   {
     id: "impounds", group: "On Duty & Driving", icon: "🚙",
@@ -193,7 +198,11 @@ const RECRUIT_HANDBOOK = [
       '<li>If none available, a <strong>Leading Senior Constable</strong> has limited impound approval.</li>' +
       '<li>Otherwise submit via #police-request (pinned template) with reasoning &amp; priors, tagging @Police Supervisor.</li>' +
       '<li>Always attempt to contact TBT for approved impounds; use impound slips in F10.</li>' +
-      '</ul>'
+      '</ul>' +
+      '<div class="rh-links"><span class="rh-links-label">Tools:</span>' +
+      '<button class="rh-tool-link" data-rh-report="traffic_warrant" type="button">🚗 Traffic Warrant — impound schedule &amp; fines</button>' +
+      '<button class="rh-tool-link" data-rh-page="traffic" type="button">📊 Traffic History — prior impounds &amp; next tier</button>' +
+      '</div>'
   },
 
   /* ───────────── PROCEDURES ───────────── */
@@ -210,7 +219,10 @@ const RECRUIT_HANDBOOK = [
       '<li>Be inconspicuous, not delay the decision, and treat them with courtesy.</li></ul>' +
       '<p>A <strong>duty of care</strong> applies — ensure no further injury occurs in custody.</p>' +
       '<p><strong>Caution</strong> must be read at the <strong>first available opportunity</strong>. It informs the suspect they are not obliged to answer questions, but anything said is recorded and may be used as evidence. Invite them to confirm they understood.</p>' +
-      '<p class="rh-note">Suspects <strong>must</strong> by law provide <strong>Name, Date of Birth and Address</strong>. They may otherwise decline to answer questions.</p>'
+      '<p class="rh-note">Suspects <strong>must</strong> by law provide <strong>Name, Date of Birth and Address</strong>. They may otherwise decline to answer questions.</p>' +
+      '<div class="rh-links"><span class="rh-links-label">Write it up:</span>' +
+      '<button class="rh-tool-link" data-rh-report="arrest" type="button">📝 Arrest Report</button>' +
+      '</div>'
   },
   {
     id: "search-seizure", group: "Procedures", icon: "🔎",
@@ -230,7 +242,10 @@ const RECRUIT_HANDBOOK = [
       '<li>You are arresting the suspect;</li>' +
       '<li>There is evidence on scene that would lead to an arrest;</li>' +
       '<li>The POI has a warrant or FPO.</li></ul>' +
-      '<p>Prior to searching, always ask if they have any <strong>sharps</strong>.</p>'
+      '<p>Prior to searching, always ask if they have any <strong>sharps</strong>.</p>' +
+      '<div class="rh-links"><span class="rh-links-label">Write it up:</span>' +
+      '<button class="rh-tool-link" data-rh-report="search_seizure" type="button">🔎 Search &amp; Seizure Report</button>' +
+      '</div>'
   },
   {
     id: "charges-pins", group: "Procedures", icon: "📋",
@@ -243,7 +258,10 @@ const RECRUIT_HANDBOOK = [
       '<li>Charge Options &rarr; select charges &rarr; Issue Charges.</li>' +
       '<li>Select the closest person to you.</li></ul>' +
       '<p class="rh-warn">All <strong>Indictable</strong> charges (marked with an orange hammer) require the suspect\'s <strong>DNA</strong> taken &amp; placed on file — <em>even if already on file.</em></p>' +
-      '<p>PINs (Penalty Infringement Notices) are issued the same way via the Fine Options &rarr; Issue Fines flow.</p>'
+      '<p>PINs (Penalty Infringement Notices) are issued the same way via the Fine Options &rarr; Issue Fines flow.</p>' +
+      '<div class="rh-links"><span class="rh-links-label">In the Report Tool:</span>' +
+      '<button class="rh-tool-link" data-rh-report="arrest" type="button">📝 Arrest Report — charge &amp; PIN pickers</button>' +
+      '</div>'
   },
   {
     id: "sentencing", group: "Procedures", icon: "⚖️",
@@ -258,7 +276,10 @@ const RECRUIT_HANDBOOK = [
       '<tr><td>SGT+ — Attempted Murder w/ FPO</td><td>250 weeks</td></tr>' +
       '<tr><td>Magistrate</td><td>450 weeks (450–900 for FPO breaches)</td></tr>' +
       '</tbody></table>' +
-      '<p>Other outcomes: <strong>Set Free</strong>, <strong>Community Service</strong>, or <strong>Send to Prison</strong> (MRC).</p>'
+      '<p>Other outcomes: <strong>Set Free</strong>, <strong>Community Service</strong>, or <strong>Send to Prison</strong> (MRC).</p>' +
+      '<div class="rh-links"><span class="rh-links-label">In the Report Tool:</span>' +
+      '<button class="rh-tool-link" data-rh-report="arrest" type="button">⚖️ Arrest Report — sentence suggestion from charges</button>' +
+      '</div>'
   },
   {
     id: "fpo", group: "Procedures", icon: "🚫",
@@ -272,7 +293,10 @@ const RECRUIT_HANDBOOK = [
       '<tr><td>Tier 3</td><td>90 Days</td><td>SGT+</td><td>Thoroughly search the person, their vehicle &amp; any occupants.</td></tr>' +
       '<tr><td>Tier 4</td><td>Permanent</td><td>INSP+</td><td>Same as Tier 3.</td></tr>' +
       '</tbody></table>' +
-      '<p>FPOs may be issued for serious reasons (e.g. attempted murder of emergency services, mass murder). After issuing in-city, you <strong>must</strong> also log the request with the FPO BOT — this is as important as issuing the FPO itself.</p>'
+      '<p>FPOs may be issued for serious reasons (e.g. attempted murder of emergency services, mass murder). After issuing in-city, you <strong>must</strong> also log the request with the FPO BOT — this is as important as issuing the FPO itself.</p>' +
+      '<div class="rh-links"><span class="rh-links-label">Write it up:</span>' +
+      '<button class="rh-tool-link" data-rh-report="search_seizure" type="button">🔎 Search &amp; Seizure — FPO search powers</button>' +
+      '</div>'
   },
   {
     id: "drugs", group: "Procedures", icon: "💊",
@@ -285,7 +309,29 @@ const RECRUIT_HANDBOOK = [
       '<tr><td>Trafficking a Drug of Dependence</td><td>$3,500</td></tr>' +
       '<tr><td>Cultivation of Narcotic Plants</td><td>$1,500</td></tr>' +
       '</tbody></table>' +
-      '<p>Charge types include Cultivation, Manufacturing, Possession, Trafficking and Fraud (fake credit cards). Related legislation: <strong>Victorian Crimes Act 1958</strong> &amp; <strong>Victorian Police Act 2013</strong>.</p>'
+      '<p>Charge types include Cultivation, Manufacturing, Possession, Trafficking and Fraud (fake credit cards). Related legislation: <strong>Victorian Crimes Act 1958</strong> &amp; <strong>Victorian Police Act 2013</strong>.</p>' +
+      '<div class="rh-links"><span class="rh-links-label">Write it up:</span>' +
+      '<button class="rh-tool-link" data-rh-report="arrest" type="button">📝 Arrest Report — Drug charges &amp; NIK test evidence</button>' +
+      '</div>'
+  },
+  {
+    id: "code4-flee", group: "Procedures", icon: "🏃",
+    title: "Fled Traffic Stop — Which Warrant?",
+    keywords: "code 4 flee fled evade fail to stop failed intercept pursuit warrant arrest questioning bodycam bwc id confirmed unconfirmed rego registered owner plate reader melroads traffic warrant",
+    html:
+      '<p>Driver takes off during a simple <strong>Code 4</strong> (traffic stop)? The paperwork depends on what you locked in before they fled — <strong>body cam</strong>, <strong>ID</strong> and <strong>rego</strong>:</p>' +
+      '<table class="rh-table"><thead><tr><th>What you have</th><th>Report to write</th></tr></thead><tbody>' +
+      '<tr><td><strong>ID CONFIRMED</strong> — licence handed over, MDT/LEAP profile matched, fingerprints, or verbal ID on BWC</td><td>VicPol <strong>Warrant for Arrest</strong> — record the ID confirmation basis in the warrant</td></tr>' +
+      '<tr><td><strong>ID unconfirmed</strong>, but <strong>rego confirmed</strong> (plate read / plate reader hit) and/or <strong>BWC</strong> captured the driver</td><td>VicPol <strong>Warrant for Questioning</strong> — the registered owner is a lead, not a confirmed ID</td></tr>' +
+      '<tr><td><strong>No stop achieved</strong> — vehicle failed to pull over / intercept abandoned for public safety</td><td><strong>Traffic Warrant</strong> — tick <em>"Failed attempt to intercept"</em>; paste the MELROADS excerpt to fill the vehicle details</td></tr>' +
+      '</tbody></table>' +
+      '<p class="rh-note">Rule of thumb: an <strong>arrest warrant</strong> needs identity confirmed <strong>beyond reasonable doubt</strong>. Anything less — even a confirmed rego with a likely driver — stays a <strong>questioning warrant</strong> until identity is confirmed.</p>' +
+      '<p>Evidence to log before writing: <strong>BWC</strong>, plate reader / rego check, MDT / MELROADS profile, radar reading. The report narrative has quick-add buttons for each.</p>' +
+      '<div class="rh-links"><span class="rh-links-label">Write it now:</span>' +
+      '<button class="rh-tool-link" data-rh-report="vicpol_arrest" type="button">📝 Warrant for Arrest</button>' +
+      '<button class="rh-tool-link" data-rh-report="vicpol_warrant" type="button">❓ Warrant for Questioning</button>' +
+      '<button class="rh-tool-link" data-rh-report="traffic_warrant" type="button">🚗 Traffic Warrant</button>' +
+      '</div>'
   },
   {
     id: "warrants", group: "Procedures", icon: "📝",
@@ -294,7 +340,14 @@ const RECRUIT_HANDBOOK = [
     html:
       '<p><strong>Warrant writing</strong> — focus on the facts: <strong>WHO, WHAT, WHEN, WHERE, HOW and WHY</strong>. Include time &amp; date and a full location (street, suburb, post code, landmarks). Add the warrant to the suspect\'s history via the MDT (Add Warrant).</p>' +
       '<p><strong>Arrest reports</strong> are added in the MDT and should stand alone without testimony.</p>' +
-      '<p><strong>Move-On Orders</strong> require an individual to leave an area for a set period. Returning makes them liable to a <strong>Disorderly Conduct</strong> charge or a PIN for not obeying police direction. A verbal move-on is often sufficient.</p>'
+      '<p><strong>Move-On Orders</strong> require an individual to leave an area for a set period. Returning makes them liable to a <strong>Disorderly Conduct</strong> charge or a PIN for not obeying police direction. A verbal move-on is often sufficient.</p>' +
+      '<p class="rh-note">Not sure which warrant fits a fleeing driver? See <button class="rh-jump-link" data-rh-jump="code4-flee" type="button">Fled Traffic Stop — Which Warrant?</button></p>' +
+      '<div class="rh-links"><span class="rh-links-label">Write it now:</span>' +
+      '<button class="rh-tool-link" data-rh-report="arrest" type="button">📝 Arrest Report</button>' +
+      '<button class="rh-tool-link" data-rh-report="vicpol_arrest" type="button">📝 Warrant for Arrest</button>' +
+      '<button class="rh-tool-link" data-rh-report="vicpol_warrant" type="button">❓ Warrant for Questioning</button>' +
+      '<button class="rh-tool-link" data-rh-report="field_contact" type="button">🤝 Field Contact — move-ons &amp; street checks</button>' +
+      '</div>'
   },
   {
     id: "critical-incidents", group: "Procedures", icon: "🏦",
@@ -307,7 +360,10 @@ const RECRUIT_HANDBOOK = [
       '<tr><td><strong>Additional Units</strong></td><td>Keep a secure perimeter · listen to directions · stand by for a possible breach.</td></tr>' +
       '<tr><td><strong>K9</strong></td><td>Sweep the area for possible suspects.</td></tr>' +
       '</tbody></table>' +
-      '<p class="rh-warn">Do not use doors/abilities to powergame your way into an active scene — wait for direction.</p>'
+      '<p class="rh-warn">Do not use doors/abilities to powergame your way into an active scene — wait for direction.</p>' +
+      '<div class="rh-links"><span class="rh-links-label">Write it up:</span>' +
+      '<button class="rh-tool-link" data-rh-report="arrest" type="button">📝 Arrest Report — scene, roles, victims &amp; timeline</button>' +
+      '</div>'
   },
   {
     id: "use-of-force", group: "Procedures", icon: "✊",
@@ -323,7 +379,10 @@ const RECRUIT_HANDBOOK = [
       '<li>Taze someone off a stationary/low-speed (&le;20 kph) motorcycle &mdash; <strong>yes</strong> (Less than Lethal +).</li>' +
       '<li>Taze/beanbag from a stationary/low-speed vehicle &mdash; <strong>yes</strong> (Less than Lethal +); RP breaking the window.</li>' +
       '<li>Lethal force on an occupant at speed (&gt;20 kph) &mdash; only if armed &amp; refusing orders, fleeing a violent crime, or using the vehicle as a weapon.</li>' +
-      '<li>Tactical contact with a motorcycle &mdash; only while they are actively firing at police.</li></ul>'
+      '<li>Tactical contact with a motorcycle &mdash; only while they are actively firing at police.</li></ul>' +
+      '<div class="rh-links"><span class="rh-links-label">Write it up:</span>' +
+      '<button class="rh-tool-link" data-rh-report="arrest" type="button">📝 Arrest Report — state the threat before the response</button>' +
+      '</div>'
   },
 
   /* ───────────── CONDUCT & CAREER ───────────── */
@@ -363,7 +422,7 @@ const RECRUIT_HANDBOOK = [
       '<p><strong>Progression unlocks (General Duties):</strong></p>' +
       '<ul>' +
       '<li><strong>Constable +</strong> — request Speed Radar &amp; ANPR; apply for K9, Marine/Water Police, Crime Scene Services.</li>' +
-      '<li><strong>First Constable +</strong> — request Unmarked patrols; apply for PORT, Bomb Response Unit, POLAIR/Airwing; transfer to Highway Patrol; become FTO/SFTO (on invite at S/CST); join CIU.</li>' +
+      '<li><strong>First Constable +</strong> — request Unmarked patrols; apply for PORT, Bomb Response Unit, POLAIR/Airwing; transfer to Highway Patrol; become FTO/SFTO (on invite at SC); join CIU.</li>' +
       '<li><strong>Senior Constable +</strong> — RCV cert (PORT only); carry the service shotgun while PORT; transfer to CIRT; obtain Gold Class licence (min 30 days); apply for Certification FTO; considered for leadership (if invited).</li>' +
       '</ul>' +
       '<p><strong>Certifications &amp; how to apply:</strong></p>' +

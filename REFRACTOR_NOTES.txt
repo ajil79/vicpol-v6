@@ -12,7 +12,8 @@ Changes made:
 Recommended next steps:
 - Split app.js further into storage, OCR, render, and report generators
 - Add a small regression test checklist for each report type and OCR intake
-- Consider bundling OCR assets locally for stronger offline behaviour
+- (DONE) OCR assets are bundled locally at assets/vendor/tesseract (see OCR_ASSET_BASE
+  in core.js) — the app OCRs fully offline
 
 
 V2 changes:
