@@ -1387,7 +1387,7 @@ Is there anything you would like to say regarding the charges?`;
 
   function extractOfficerName(line) {
     const s = (line || "").trim();
-    const re = /^\s*[,•\-\u2022]*\s*[A-Z0-9]{2,4}[\s\-]?\d{1,4}\s*(?:\|\s*)?(?:(A\/SGT|A\/INSP|A\/SUPT|SGT|S\/SGT|INSP|SUPT|CHIEF|REC|RECRUIT|PROB|PO|CST|CONST|SC|S\/C|LSC|FC|FST)\b\.?\s*)?(.+?)\s*$/i;
+    const re = /^\s*[,•\-\u2022]*\s*[A-Z0-9]{2,4}[\s\-]?\d{1,4}\s*(?:\|\s*)?(?:(A\/SGT|A\/INSP|A\/SUPT|SGT|S\/SGT|INSP|SUPT|CHIEF|RECRUIT|RCT|REC|PCON|PROB|PO|CST|CONST|CON|SC|S\/C|LSC|FC|FST)\b\.?\s*)?(.+?)\s*$/i;
     const m = s.match(re);
     if (!m) return "";
     let name = (m[2] || "").trim();
