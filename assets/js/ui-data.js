@@ -2179,9 +2179,9 @@
     } catch(e) {}
   }
 
-  // Default officer roster from VicPol May 2026 Hours
+  // Default officer roster from VicPol June 2026 Hours
   const DEFAULT_OFFICERS = [
-    // Leadership Team (27)
+    // Leadership Team (28)
     {name:"Aaron McCrann",           rank:"",    division:"Leadership"},
     {name:"Alexander Hale",          rank:"",    division:"Leadership"},
     {name:"Alicia Draykos",          rank:"",    division:"Leadership"},
@@ -2190,41 +2190,41 @@
     {name:"Ben Ghost-Winters",       rank:"",    division:"Leadership"},
     {name:"Brad Bentley",            rank:"",    division:"Leadership"},
     {name:"Bruce D-Shark",           rank:"",    division:"Leadership"},
+    {name:"Burton",                  rank:"Chief Commissioner", division:"Leadership"},
     {name:"Daniel Squelch-Ashburn",  rank:"",    division:"Leadership"},
     {name:"Ford Robinson",           rank:"SGT", division:"Leadership"},
-    {name:"Frank Sanchez",           rank:"",    division:"Leadership"},
+    {name:"Franklin Sanchez",        rank:"",    division:"Leadership"},
     {name:"Harvey Decker",           rank:"",    division:"Leadership"},
-    {name:"Hayley O'Riley",          rank:"",    division:"Leadership"},
     {name:"Hester Cow-Kelly",        rank:"",    division:"Leadership"},
+    {name:"Jake Jay-Ashburn",        rank:"",    division:"Leadership"},
     {name:"James Edwin",             rank:"",    division:"Leadership"},
     {name:"Jim Morgan",              rank:"",    division:"Leadership"},
     {name:"Jonathan Cow-Kelly",      rank:"",    division:"Leadership"},
     {name:"Lachie Milton",           rank:"",    division:"Leadership"},
     {name:"Lewis Ashburn",           rank:"",    division:"Leadership"},
+    {name:"Luca O'Riley",            rank:"",    division:"Leadership"},
     {name:"Mike Frosties",           rank:"",    division:"Leadership"},
     {name:"Mike Simple",             rank:"",    division:"Leadership"},
     {name:"Mitch Erdstein",          rank:"",    division:"Leadership"},
     {name:"Nemo DaFish",             rank:"",    division:"Leadership"},
     {name:"Nunya Biznus",            rank:"",    division:"Leadership"},
     {name:"Oliver Burton-Stater",    rank:"",    division:"Leadership"},
-    {name:"Sergeant Burton",         rank:"SGT", division:"Leadership"},
     {name:"Zoe Prime",               rank:"",    division:"Leadership"},
-    // Special Constables (14)
+    // Special Constables (13)
     {name:"Adrian Benedict",         rank:"SPC", division:"Special Constable"},
     {name:"Alfred Pier",             rank:"SPC", division:"Special Constable"},
     {name:"Anya Burton",             rank:"SPC", division:"Special Constable"},
     {name:"Bobby Sinclair",          rank:"SPC", division:"Special Constable"},
     {name:"Bragi Luciano-Cow",       rank:"SPC", division:"Special Constable"},
     {name:"Hercules Draykos",        rank:"SPC", division:"Special Constable"},
-    {name:"Jake Jay-Ashburn",        rank:"SPC", division:"Special Constable"},
     {name:"James Kade",              rank:"SPC", division:"Special Constable"},
     {name:"Michael West",            rank:"SPC", division:"Special Constable"},
+    {name:"Rose Panchak",            rank:"SPC", division:"Special Constable"},
     {name:"Ross Owans",              rank:"SPC", division:"Special Constable"},
     {name:"Steven Evans",            rank:"SPC", division:"Special Constable"},
     {name:"Titus Jorgan",            rank:"SPC", division:"Special Constable"},
     {name:"Wiggy Donovan",           rank:"SPC", division:"Special Constable"},
-    {name:"Zelda Panchak",           rank:"SPC", division:"Special Constable"},
-    // Victoria Police Officers (65)
+    // Victoria Police Officers (73)
     {name:"Aaron Ford",              rank:"",    division:"Victoria Police"},
     {name:"Aaron Hudson",            rank:"",    division:"Victoria Police"},
     {name:"Alemain Taumata",         rank:"",    division:"Victoria Police"},
@@ -2232,11 +2232,15 @@
     {name:"Alisha Taumata",          rank:"",    division:"Victoria Police"},
     {name:"Anthony Vivian",          rank:"",    division:"Victoria Police"},
     {name:"Arlo Bobby-Brown",        rank:"",    division:"Victoria Police"},
+    {name:"Ben Ramirez",             rank:"",    division:"Victoria Police"},
     {name:"Billy Cooper",            rank:"",    division:"Victoria Police"},
-    {name:"Bob Bean-Reigns",         rank:"",    division:"Victoria Police"},
+    {name:"Blake Cross",             rank:"",    division:"Victoria Police"},
+    {name:"Bob Bean",                rank:"",    division:"Victoria Police"},
     {name:"Bonnie Rose",             rank:"",    division:"Victoria Police"},
     {name:"Chris Gray",              rank:"",    division:"Victoria Police"},
+    {name:"Chris Turner",            rank:"",    division:"Victoria Police"},
     {name:"Cody Turner",             rank:"",    division:"Victoria Police"},
+    {name:"Daniel Snow",             rank:"",    division:"Victoria Police"},
     {name:"Daquavis Milton",         rank:"",    division:"Victoria Police"},
     {name:"David Ace",               rank:"",    division:"Victoria Police"},
     {name:"David Windsor",           rank:"",    division:"Victoria Police"},
@@ -2244,6 +2248,7 @@
     {name:"Domonic Crooks",          rank:"",    division:"Victoria Police"},
     {name:"Ellie Odinson",           rank:"",    division:"Victoria Police"},
     {name:"Emily Cumpson",           rank:"",    division:"Victoria Police"},
+    {name:"Ethan Mac-Osbourne",      rank:"",    division:"Victoria Police"},
     {name:"Frangelico Kamasutra",    rank:"",    division:"Victoria Police"},
     {name:"Jack Blasco",             rank:"",    division:"Victoria Police"},
     {name:"Jake Ramirez",            rank:"",    division:"Victoria Police"},
@@ -2256,9 +2261,11 @@
     {name:"Leonard Bo",              rank:"",    division:"Victoria Police"},
     {name:"Lexi Rivera",             rank:"",    division:"Victoria Police"},
     {name:"Liam Kone-Galetto",       rank:"",    division:"Victoria Police"},
+    {name:"Logan Itani",             rank:"",    division:"Victoria Police"},
     {name:"Luigi Johnson-Cow",       rank:"",    division:"Victoria Police"},
     {name:"Luke Not",                rank:"",    division:"Victoria Police"},
     {name:"Michael Cumpson",         rank:"",    division:"Victoria Police"},
+    {name:"Michael Draykos",         rank:"",    division:"Victoria Police"},
     {name:"Mike Ray",                rank:"",    division:"Victoria Police"},
     {name:"Mitch Cooper",            rank:"",    division:"Victoria Police"},
     {name:"Moey Rose",               rank:"",    division:"Victoria Police"},
@@ -2282,6 +2289,7 @@
     {name:"Stella O'Riley",          rank:"",    division:"Victoria Police"},
     {name:"Stephen Palmes",          rank:"",    division:"Victoria Police"},
     {name:"Sunny Freckle",           rank:"",    division:"Victoria Police"},
+    {name:"Teekay Strauss",          rank:"",    division:"Victoria Police"},
     {name:"Tim Sandero",             rank:"",    division:"Victoria Police"},
     {name:"Toby Burks",              rank:"",    division:"Victoria Police"},
     {name:"Tommy Dextra",            rank:"",    division:"Victoria Police"},
@@ -2332,8 +2340,62 @@
     });
     if (changed) saveOfficersDB(updated);
   }
-  migrateSpecialConstableRanks();
-  seedOfficersDB();
+
+  // One-time, idempotent migration for the June 2026 roster refresh. Applies the
+  // renames / promotion / department move to existing local databases so they
+  // match the updated DEFAULT_OFFICERS seed. seedOfficersDB() only ADDS missing
+  // names — it never renames or moves — so without this an existing DB would keep
+  // the stale entries (and gain a duplicate once the new name seeds in).
+  // Runs BEFORE seedOfficersDB(); on a fresh/empty DB it simply no-ops.
+  function migrateJune2026Roster() {
+    const arr = loadOfficersDB();
+    let changed = false;
+    // Match on the name field (case-insensitive). Each patch fires only while the
+    // OLD name is still present, so re-running the migration is a no-op.
+    const renames = {
+      "FRANK SANCHEZ":   { name: "Franklin Sanchez" },
+      "BOB BEAN-REIGNS": { name: "Bob Bean" },
+      "HAYLEY O'RILEY":  { name: "Luca O'Riley" },
+      "ZELDA PANCHAK":   { name: "Rose Panchak" },
+      "SERGEANT BURTON": { name: "Burton", rank: "Chief Commissioner", division: "Leadership" }
+    };
+    const rebuildFull = (o, rank, name) => {
+      const cs = (o.callsigns && o.callsigns.length) ? o.callsigns.join(" • ") : o.callsign;
+      const rankName = [rank, name].filter(Boolean).join(" ");
+      return cs ? (cs + " | " + rankName) : rankName;
+    };
+    const updated = arr.map(o => {
+      const key = norm(o.name).toUpperCase();
+      // Renames + Burton promotion
+      const patch = renames[key];
+      if (patch) {
+        changed = true;
+        const name = patch.name;
+        const rank = ("rank" in patch) ? patch.rank : o.rank;
+        const division = ("division" in patch) ? patch.division : o.division;
+        const next = { ...o, name, rank, division, full: rebuildFull(o, rank, name) };
+        if ("division" in patch) next.divisions = [division];
+        return next;
+      }
+      // Department move: Jake Jay-Ashburn Special Constable → Leadership (unranked)
+      if (key === "JAKE JAY-ASHBURN") {
+        const isSpecial = norm(o.division).toUpperCase() === "SPECIAL CONSTABLE"
+          || (o.divisions || []).some(d => norm(d).toUpperCase() === "SPECIAL CONSTABLE");
+        if (isSpecial) {
+          changed = true;
+          return { ...o, rank: "", division: "Leadership", divisions: ["Leadership"], full: rebuildFull(o, "", o.name) };
+        }
+      }
+      return o;
+    });
+    if (changed) saveOfficersDB(updated);
+  }
+  // NOTE: the migrate/seed calls are intentionally invoked at the END of this
+  // file (see bottom) — they depend on saveOfficersDB → normalizeOfficerRecord →
+  // canonicalRankAbbr, which reads the RANK_ABBR_ALIASES const declared much
+  // later. Calling them here would hit that const's temporal dead zone and the
+  // resulting error would be swallowed by saveOfficersDB's try/catch, silently
+  // dropping the whole default roster on first load.
 
   function upsertOfficer(officer) {
     if (!officer || !officer.full || officer.full.trim().length < 2) return;
@@ -3699,4 +3761,13 @@
   updateOcrAvailability();
   window.addEventListener("online", updateOcrAvailability);
   window.addEventListener("offline", updateOcrAvailability);
+
+  // Seed / migrate the officer roster. Deferred to the end of the file so the
+  // rank-ladder consts (VICPOL_RANK_LADDER, RANK_ABBR_ALIASES) used by
+  // normalizeOfficerRecord are already initialised — otherwise the writes throw
+  // in their temporal dead zone and get swallowed, dropping the default roster.
+  // All three are idempotent, so running once per load is safe.
+  migrateSpecialConstableRanks();
+  migrateJune2026Roster();
+  seedOfficersDB();
 
