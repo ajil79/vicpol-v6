@@ -361,26 +361,43 @@
   }
 
   // Initialize
-  loadAutosave();
-  sanitizeVicPolState(false);
-  renderAll();
-  bindInputs();
-  setupOffenderAutocomplete();
-  initPersonsModal();
-  setupOfficerAutocomplete();
-  setupSignatureAutocomplete();
-  initSectionClearButtons();
-  if (typeof initRecruitHelper === 'function') initRecruitHelper();
-  initChargeFilters();
-  renderChargeList();
-  renderPinList();
-  renderSelectedCharges();
-  renderSelectedPins();
-  updateSentenceSuggestion();
-  updateLicenseWarning();
-  applyExcludedClasses();
-  setPreviewStickyOffset();
-  updateToolChrome('report');
+  // Tab switching must survive any init failure below — bind it first, via
+  // delegation, so a crash in any later startup step can never leave the nav
+  // dead (previously the tabs were only wired at the very end of this file,
+  // so one uncaught error anywhere in init silently killed all of them).
+  const toolNav = document.getElementById('toolNav');
+  if (toolNav) toolNav.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-tool-page]');
+    if (btn) showToolPage(btn.dataset.toolPage);
+  });
+
+  // Each init step runs guarded so one failing step (corrupt autosave,
+  // storage quirks, odd webview) degrades that feature instead of aborting
+  // the rest of startup. Steps are arrows so a missing global (e.g. from a
+  // stale cached script) is caught here too instead of throwing at the callsite.
+  function safeInit(label, fn) {
+    try { fn(); } catch (e) { console.error('[vicpol init] ' + label + ' failed:', e); }
+  }
+  safeInit('loadAutosave', () => loadAutosave());
+  safeInit('sanitizeVicPolState', () => sanitizeVicPolState(false));
+  safeInit('renderAll', () => renderAll());
+  safeInit('bindInputs', () => bindInputs());
+  safeInit('setupOffenderAutocomplete', () => setupOffenderAutocomplete());
+  safeInit('initPersonsModal', () => initPersonsModal());
+  safeInit('setupOfficerAutocomplete', () => setupOfficerAutocomplete());
+  safeInit('setupSignatureAutocomplete', () => setupSignatureAutocomplete());
+  safeInit('initSectionClearButtons', () => initSectionClearButtons());
+  safeInit('initRecruitHelper', () => { if (typeof initRecruitHelper === 'function') initRecruitHelper(); });
+  safeInit('initChargeFilters', () => initChargeFilters());
+  safeInit('renderChargeList', () => renderChargeList());
+  safeInit('renderPinList', () => renderPinList());
+  safeInit('renderSelectedCharges', () => renderSelectedCharges());
+  safeInit('renderSelectedPins', () => renderSelectedPins());
+  safeInit('updateSentenceSuggestion', () => updateSentenceSuggestion());
+  safeInit('updateLicenseWarning', () => updateLicenseWarning());
+  safeInit('applyExcludedClasses', () => applyExcludedClasses());
+  safeInit('setPreviewStickyOffset', () => setPreviewStickyOffset());
+  safeInit('updateToolChrome', () => updateToolChrome('report'));
 
   // Restore the last active tab (a #report/#traffic/#ocr/#recruit hash wins over storage)
   try {
@@ -446,11 +463,8 @@
   window.showToolPage = showToolPage;
 
   function initUiBindings() {
-    document.querySelectorAll('.tool-nav button[data-tool-page]').forEach(btn => {
-      if (btn.dataset.bound === '1') return;
-      btn.dataset.bound = '1';
-      btn.addEventListener('click', () => showToolPage(btn.dataset.toolPage));
-    });
+    // Tool-nav tab clicks are bound via delegation at the top of the init
+    // sequence (see "Initialize" above) so they survive any init failure.
 
     const guidelinesToggle = document.getElementById('guidelinesToggle');
     const guidelinesBody = document.getElementById('guidelinesBody');
@@ -1854,7 +1868,7 @@
     }
   }
 
-  initializeCollapsibleCards();
-  expandCardsWithContentDefaults();
-  initUiBindings();
-  initOcrLabBindings();
+  safeInit('initializeCollapsibleCards', () => initializeCollapsibleCards());
+  safeInit('expandCardsWithContentDefaults', () => expandCardsWithContentDefaults());
+  safeInit('initUiBindings', () => initUiBindings());
+  safeInit('initOcrLabBindings', () => initOcrLabBindings());

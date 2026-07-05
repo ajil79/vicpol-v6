@@ -7,7 +7,7 @@
 <meta content="default-src 'self' data: blob:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob:; connect-src 'self' data: blob:; worker-src 'self' blob:; child-src 'self' blob:; font-src 'self' data: https://fonts.gstatic.com;" http-equiv="Content-Security-Policy"/>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&amp;family=IBM+Plex+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <title>VicPol Tool v6</title>
-<link href="assets/css/app.css" rel="stylesheet"/>
+<link href="assets/css/app.css?v=20260704" rel="stylesheet"/>
 </head>
 <body>
 <noscript>
@@ -958,14 +958,16 @@ Paramedic David Ace" rows="3"></textarea></label>
 <div id="recruitSections"></div>
 </div>
 </div>
-<script src="assets/data/charges.js"></script>
-<script src="assets/data/pins.js"></script>
-<script src="assets/js/core.js"></script>
-<script src="assets/js/reports.js"></script>
-<script src="assets/data/items.js"></script>
-<script src="assets/js/ocr.js"></script>
-<script src="assets/js/ui-data.js"></script>
-<script src="assets/data/recruit.js"></script>
-<script src="assets/js/recruit-helper.js"></script>
-<script src="assets/js/interactions.js"></script></body>
+<!-- ?v= cache-busting: bump the value whenever any css/js asset changes so
+     browsers holding stale copies (especially mobile) fetch fresh files. -->
+<script src="assets/data/charges.js?v=20260704"></script>
+<script src="assets/data/pins.js?v=20260704"></script>
+<script src="assets/js/core.js?v=20260704"></script>
+<script src="assets/js/reports.js?v=20260704"></script>
+<script src="assets/data/items.js?v=20260704"></script>
+<script src="assets/js/ocr.js?v=20260704"></script>
+<script src="assets/js/ui-data.js?v=20260704"></script>
+<script src="assets/data/recruit.js?v=20260704"></script>
+<script src="assets/js/recruit-helper.js?v=20260704"></script>
+<script src="assets/js/interactions.js?v=20260704"></script></body>
 </html>
