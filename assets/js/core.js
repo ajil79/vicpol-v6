@@ -1,5 +1,36 @@
 /* Core metadata, helpers, state, preset helpers, report visibility config. */
 
+  // Global error reporter. Startup failures used to die silently, leaving the
+  // UI half-wired with no clue on devices without a console (mobile). Surface
+  // the first few uncaught errors in a small dismissible banner instead.
+  window.addEventListener('error', (ev) => {
+    try {
+      let banner = document.getElementById('vicpolErrorBanner');
+      if (!banner) {
+        banner = document.createElement('div');
+        banner.id = 'vicpolErrorBanner';
+        banner.setAttribute('role', 'alert');
+        banner.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#5c1a1a;color:#ffd7d7;font:12px/1.5 system-ui,Arial,sans-serif;padding:10px 40px 10px 14px;border-top:2px solid #a33';
+        const close = document.createElement('button');
+        close.textContent = '✕';
+        close.setAttribute('aria-label', 'Dismiss error banner');
+        close.style.cssText = 'position:absolute;top:6px;right:8px;background:none;border:none;color:#ffd7d7;font-size:14px;cursor:pointer;padding:4px';
+        close.addEventListener('click', () => banner.remove());
+        banner.appendChild(close);
+        const msgs = document.createElement('div');
+        msgs.id = 'vicpolErrorBannerMsgs';
+        banner.appendChild(msgs);
+        (document.body || document.documentElement).appendChild(banner);
+      }
+      const msgs = document.getElementById('vicpolErrorBannerMsgs');
+      if (msgs && msgs.childElementCount < 3) {
+        const where = ev.filename ? ev.filename.split('/').pop() + (ev.lineno ? ':' + ev.lineno : '') : '';
+        const line = document.createElement('div');
+        line.textContent = '⚠ Something failed to load' + (where ? ' (' + where + ')' : '') + ': ' + (ev.message || 'unknown error') + ' — try a hard refresh.';
+        msgs.appendChild(line);
+      }
+    } catch (e) {}
+  });
 
   const APP_META = {
     name: "VicPol Tool",
