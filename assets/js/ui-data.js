@@ -853,48 +853,54 @@
       el.saveDraftBtn.addEventListener("click", saveDraft);
     }
 
-    if (el.clearBtn) {
-      el.clearBtn.addEventListener("click", () => {
-        if (!confirm("Clear all form data and preview?\n\nOfficer details (callsign, unit, signature) will be kept.")) return;
-        // Capture officer details before clearing
-        const carry = getOfficerCarryOver();
-        // Store pre-clear state for undo
-        try {
-          localStorage.setItem("vicpol_report_undo_state", JSON.stringify(state));
-          localStorage.setItem("vicpol_report_undo_charges", JSON.stringify([...selectedChargesSet]));
-          localStorage.setItem("vicpol_report_undo_pins", JSON.stringify([...selectedPinsSet]));
-        } catch(e) {}
-        state = deepClone(INITIAL_STATE);
-        selectedChargesSet.clear();
-        selectedPinsSet.clear();
-        // Clear defects
-        _defectHistory.length = 0;
-        if (typeof renderSelectedDefectsChips === 'function') renderSelectedDefectsChips();
-        // Clear vehicle inspection
-        vicType = null;
-        vicState = {};
-        const vicIdle = document.getElementById('vicIdle');
-        const vicWrap = document.getElementById('vicChecklistWrap');
-        const vicBanner = document.getElementById('vicOutcomeBanner');
-        if (vicIdle) vicIdle.style.display = 'block';
-        if (vicWrap) vicWrap.style.display = 'none';
-        if (vicBanner) vicBanner.style.display = 'none';
-        ['vicVehicleType','vicRego','vicMake','vicColour','vicDriver','vicLocation','vicNotes'].forEach(id => {
-          const e = document.getElementById(id); if (e) e.value = '';
-        });
-        if (el.reportType) state.reportType = el.reportType.value || state.reportType;
-        // Restore callsigns from persistent storage (not wiped by Clear)
-        state.savedCallsigns = loadCallsignPool();
-        // Restore officer carry-over
-        applyOfficerCarryOver(carry);
-        renderAll();
-        // Re-apply carry-over after renderAll (which may overwrite from state)
-        applyOfficerCarryOver(carry);
-        throttledAutosave();
-        toast("Form cleared — officer details kept — click Undo to restore everything", "ok");
-        // Show undo button temporarily
-        showUndoClear();
+    function clearAllForm() {
+      if (!confirm("Clear all form data and preview?\n\nOfficer details (callsign, unit, signature) will be kept.")) return;
+      // Capture officer details before clearing
+      const carry = getOfficerCarryOver();
+      // Store pre-clear state for undo
+      try {
+        localStorage.setItem("vicpol_report_undo_state", JSON.stringify(state));
+        localStorage.setItem("vicpol_report_undo_charges", JSON.stringify([...selectedChargesSet]));
+        localStorage.setItem("vicpol_report_undo_pins", JSON.stringify([...selectedPinsSet]));
+      } catch(e) {}
+      state = deepClone(INITIAL_STATE);
+      selectedChargesSet.clear();
+      selectedPinsSet.clear();
+      // Clear defects
+      _defectHistory.length = 0;
+      if (typeof renderSelectedDefectsChips === 'function') renderSelectedDefectsChips();
+      // Clear vehicle inspection
+      vicType = null;
+      vicState = {};
+      const vicIdle = document.getElementById('vicIdle');
+      const vicWrap = document.getElementById('vicChecklistWrap');
+      const vicBanner = document.getElementById('vicOutcomeBanner');
+      if (vicIdle) vicIdle.style.display = 'block';
+      if (vicWrap) vicWrap.style.display = 'none';
+      if (vicBanner) vicBanner.style.display = 'none';
+      ['vicVehicleType','vicRego','vicMake','vicColour','vicDriver','vicLocation','vicNotes'].forEach(id => {
+        const e = document.getElementById(id); if (e) e.value = '';
       });
+      if (el.reportType) state.reportType = el.reportType.value || state.reportType;
+      // Restore callsigns from persistent storage (not wiped by Clear)
+      state.savedCallsigns = loadCallsignPool();
+      // Restore officer carry-over
+      applyOfficerCarryOver(carry);
+      renderAll();
+      // Re-apply carry-over after renderAll (which may overwrite from state)
+      applyOfficerCarryOver(carry);
+      throttledAutosave();
+      toast("Form cleared — officer details kept — click Undo to restore everything", "ok");
+      // Show undo button temporarily
+      showUndoClear();
+    }
+
+    if (el.clearBtn) {
+      el.clearBtn.addEventListener("click", clearAllForm);
+    }
+    const clearAllBottomBtn = document.getElementById("clearAllBottomBtn");
+    if (clearAllBottomBtn) {
+      clearAllBottomBtn.addEventListener("click", clearAllForm);
     }
 
     // Undo Clear function
@@ -1190,6 +1196,9 @@
         renderSelectedPins();
         renderPinList();
         state.pinsList = "";
+        state.currentDemeritPoints = 0;
+        const demeritField = document.getElementById("currentDemeritPoints");
+        if (demeritField) demeritField.value = 0;
         updateLicenseWarning();
         debouncedRenderPreview();
         throttledAutosave();
@@ -1201,7 +1210,8 @@
     if (demeritInput) {
       demeritInput.value = state.currentDemeritPoints || 0;
       demeritInput.addEventListener("input", () => {
-        state.currentDemeritPoints = parseInt(demeritInput.value) || 0;
+        // min/max attributes don't constrain typed values — clamp to 0..50
+        state.currentDemeritPoints = Math.min(50, Math.max(0, parseInt(demeritInput.value) || 0));
         updateLicenseWarning();
         throttledAutosave();
       });
