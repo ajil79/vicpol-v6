@@ -1171,15 +1171,7 @@
     }
     
     if (el.clearChargesBtn) {
-      el.clearChargesBtn.addEventListener("click", () => {
-        selectedChargesSet.clear();
-        renderSelectedCharges();
-        renderChargeList();
-        updateSentenceSuggestion();
-        state.chargesList = "";
-        debouncedRenderPreview();
-        throttledAutosave();
-      });
+      el.clearChargesBtn.addEventListener("click", () => clearSection('charges'));
     }
     
     if (el.pinSearch) {
@@ -1191,18 +1183,9 @@
     }
     
     if (el.clearPinsBtn) {
-      el.clearPinsBtn.addEventListener("click", () => {
-        selectedPinsSet.clear();
-        renderSelectedPins();
-        renderPinList();
-        state.pinsList = "";
-        state.currentDemeritPoints = 0;
-        const demeritField = document.getElementById("currentDemeritPoints");
-        if (demeritField) demeritField.value = 0;
-        updateLicenseWarning();
-        debouncedRenderPreview();
-        throttledAutosave();
-      });
+      // clearSection also zeroes currentDemeritPoints so the demerit field
+      // can't survive a "Clear All" and get re-persisted by autosave
+      el.clearPinsBtn.addEventListener("click", () => clearSection('pins'));
     }
 
     // Current demerit points input
@@ -1211,7 +1194,12 @@
       demeritInput.value = state.currentDemeritPoints || 0;
       demeritInput.addEventListener("input", () => {
         // min/max attributes don't constrain typed values — clamp to 0..50
-        state.currentDemeritPoints = Math.min(50, Math.max(0, parseInt(demeritInput.value) || 0));
+        const parsed = parseInt(demeritInput.value);
+        const clamped = Math.min(50, Math.max(0, parsed || 0));
+        // Snap the field to the clamped value, but leave it alone mid-edit
+        // (empty/partial input parses to NaN and shouldn't be rewritten)
+        if (!isNaN(parsed) && parsed !== clamped) demeritInput.value = clamped;
+        state.currentDemeritPoints = clamped;
         updateLicenseWarning();
         throttledAutosave();
       });
